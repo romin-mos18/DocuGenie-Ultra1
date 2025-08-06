@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from .ocr_service import OCRService
 from .classification_service import DocumentClassificationService
-from ..core.config import settings
+from core.config import settings
 
 logger = logging.getLogger(__name__)
 

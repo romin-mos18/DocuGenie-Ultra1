@@ -7,8 +7,8 @@ from sqlalchemy.pool import StaticPool
 from typing import Generator
 import os
 
-from ..core.config import settings
-from .base import Base
+from core.config import settings
+from database.base import Base
 
 # Create database engine
 if settings.DEBUG:

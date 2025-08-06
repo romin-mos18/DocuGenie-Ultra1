@@ -8,9 +8,9 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from ..core.config import settings
-from ..models.user import User, UserRole, UserStatus
-from ..database.session import get_db
+from core.config import settings
+from models.user import User, UserRole, UserStatus
+from database.session import get_db
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
