@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+.venv
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.next/
+out/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Docker
+*.pid
+*.seed
+*.pid.lock
+.dockerignore
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+log/
+
+# Testing
+coverage/
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets
+*.pem
+*.key
+secrets/
+.secrets/
+
+# Uploads
+uploads/
+temp/
+tmp/
+
+# ML Models
+models/*.pkl
+models/*.h5
+models/*.pt
+*.ckpt
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+site/
