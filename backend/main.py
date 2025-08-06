@@ -1,83 +1,92 @@
 """
 DocuGenie Ultra - Main Application Entry Point
 """
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-import uvicorn
 import os
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
 
-# Import routers (we'll create these next)
-# from api.v1 import documents, auth, health
+# Import configuration
+from .core.config import settings
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Manage application lifecycle
-    """
-    # Startup
-    print("🚀 Starting DocuGenie Ultra API...")
-    # Initialize database connections
-    # Initialize AI models
-    yield
-    # Shutdown
-    print("🛑 Shutting down DocuGenie Ultra API...")
+# Import API routes
+from .api.auth import router as auth_router
+from .api.users import router as users_router
+from .api.documents import router as documents_router
 
-# Create FastAPI application
+# Import database
+from .database.session import create_tables
+
 app = FastAPI(
-    title="DocuGenie Ultra API",
-    description="AI-powered healthcare document management system",
+    title=settings.APP_NAME,
     version="1.0.0",
-    lifespan=lifespan,
+    description="AI-powered healthcare document management system API",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
 )
 
-# CORS middleware configuration
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(","),
+    allow_origins=["*"],  # Adjust in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Root endpoint
-@app.get("/")
-def root():
-    """Root endpoint"""
+# Include API routes
+app.include_router(auth_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
+app.include_router(documents_router, prefix="/api/v1")
+
+
+@app.get("/", tags=["Root"])
+async def read_root():
+    return {"message": "Welcome to DocuGenie Ultra API"}
+
+
+@app.get("/health", tags=["Monitoring"])
+async def health_check():
+    return {"status": "healthy", "version": "1.0.0"}
+
+
+@app.get("/api/v1/", tags=["API Info"])
+async def api_info():
     return {
-        "name": "DocuGenie Ultra API",
+        "message": "DocuGenie Ultra API v1",
         "version": "1.0.0",
-        "status": "running",
-        "docs": "/api/docs"
+        "docs": "/api/docs",
+        "endpoints": {
+            "auth": "/api/v1/auth",
+            "users": "/api/v1/users",
+            "documents": "/api/v1/documents"
+        }
     }
 
-# Health check endpoint
-@app.get("/health")
-def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "docugenie-api",
-        "version": "1.0.0"
-    }
 
-# Include routers (uncomment when created)
-# app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
-# app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
-# app.include_router(documents.router, prefix="/api/v1/documents", tags=["documents"])
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on startup"""
+    try:
+        create_tables()
+        print("✅ Database tables created successfully")
+    except Exception as e:
+        print(f"⚠️  Database initialization warning: {e}")
+
 
 if __name__ == "__main__":
     # Development server
+    import uvicorn
     uvicorn.run(
         "main:app",
         host=os.getenv("HOST", "0.0.0.0"),
-        port=int(os.getenv("PORT", 8001)),
+        port=int(os.getenv("PORT", 8000)),
         reload=True,
         log_level="info"
     )
