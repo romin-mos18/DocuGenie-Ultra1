@@ -5,13 +5,21 @@ import os
 import logging
 import re
 from typing import Dict, List, Optional, Tuple
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
-import joblib
-import numpy as np
+
+# Try to import ML libraries, but make them optional
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.pipeline import Pipeline
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import classification_report
+    import joblib
+    import numpy as np
+    ML_AVAILABLE = True
+except ImportError:
+    ML_AVAILABLE = False
+    print("⚠️ ML libraries not available. Using keyword-based classification only.")
+
 from core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -72,10 +80,17 @@ class DocumentClassificationService:
             ]
         }
         
-        self._load_or_create_model()
+        # Only try to load ML model if libraries are available
+        if ML_AVAILABLE:
+            self._load_or_create_model()
+        else:
+            logger.info("ℹ️ Using keyword-based classification (ML libraries not available)")
     
     def _load_or_create_model(self):
         """Load existing model or create new one"""
+        if not ML_AVAILABLE:
+            return
+            
         model_path = "models/document_classifier.pkl"
         
         try:
@@ -93,6 +108,9 @@ class DocumentClassificationService:
     
     def _create_model_with_sample_data(self):
         """Create model with sample training data"""
+        if not ML_AVAILABLE:
+            return
+            
         try:
             # Sample training data
             documents = []
@@ -149,7 +167,7 @@ class DocumentClassificationService:
             # Clean and preprocess text
             cleaned_text = self._preprocess_text(text)
             
-            if self.classifier:
+            if self.classifier and ML_AVAILABLE:
                 # Use ML model for classification
                 prediction = self.classifier.predict([cleaned_text])[0]
                 confidence = self._calculate_confidence(cleaned_text, prediction)
@@ -216,6 +234,9 @@ class DocumentClassificationService:
     def _calculate_confidence(self, text: str, prediction: str) -> float:
         """Calculate confidence score for ML prediction"""
         try:
+            if not ML_AVAILABLE or not self.classifier:
+                return 0.5
+                
             # Get prediction probabilities
             proba = self.classifier.predict_proba([text])[0]
             max_prob = max(proba)
