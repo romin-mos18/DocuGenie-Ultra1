@@ -8,9 +8,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
-from ..database.session import get_db
-from ..core.config import settings
-from ..services.auth import AuthService
+from database.session import get_db
+from core.config import settings
+from services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

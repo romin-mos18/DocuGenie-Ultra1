@@ -57,7 +57,7 @@ class Document(BaseModel):
     ocr_confidence = Column(Float, nullable=True)
     classification_confidence = Column(Float, nullable=True)
     extracted_entities = Column(JSON, nullable=True)  # Named entities extracted
-    metadata = Column(JSON, nullable=True)  # Additional metadata
+    document_metadata = Column(JSON, nullable=True)  # Additional metadata
     
     # Security and compliance
     is_encrypted = Column(String(10), default="false", nullable=False)

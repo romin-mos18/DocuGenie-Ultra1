@@ -12,15 +12,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import configuration
-from .core.config import settings
+from core.config import settings
 
 # Import API routes
-from .api.auth import router as auth_router
-from .api.users import router as users_router
-from .api.documents import router as documents_router
+from api.auth import router as auth_router
+from api.users import router as users_router
+from api.documents import router as documents_router
 
 # Import database
-from .database.session import create_tables
+from database.session import create_tables
 
 app = FastAPI(
     title=settings.APP_NAME,

@@ -21,15 +21,16 @@ class Settings(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "docugenie_db"
-    DB_USER: str = "user"
-    DB_PASSWORD: str = "password"
-    DATABASE_URL: str = "postgresql://user:password@localhost:5432/docugenie_db"
+    DB_USER: str = "docugenie"
+    DB_PASSWORD: str = "docugenie123"
+    DATABASE_URL: str = "postgresql://docugenie:docugenie123@localhost:5432/docugenie_db"
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
 
     # Redis Configuration
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+    REDIS_PASSWORD: str = "docugenie123"
 
     # OpenSearch Configuration
     OPENSEARCH_HOST: str = "localhost"
@@ -43,6 +44,10 @@ class Settings(BaseSettings):
     # AI/ML Service Endpoints
     OCR_SERVICE_URL: str = "http://localhost:8002/ocr"
     NER_SERVICE_URL: str = "http://localhost:8003/ner"
+
+    # File Storage
+    UPLOAD_DIR: str = "uploads"
+    LOG_FILE: str = "logs/app.log"
 
     model_config = SettingsConfigDict(env_file='.env', extra='ignore')
 

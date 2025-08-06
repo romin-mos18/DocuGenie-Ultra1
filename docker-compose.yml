@@ -14,7 +14,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U docugenie"]
+      test: ["CMD-SHELL", "pg_isready -U docugenie -d docugenie_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,7 +65,7 @@ services:
     environment:
       - QDRANT__SERVICE__GRPC_PORT=6334
 
-  # MinIO for S3-compatible storage
+  # MinIO Object Storage
   minio:
     image: minio/minio:latest
     container_name: docugenie-minio
