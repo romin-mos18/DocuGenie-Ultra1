@@ -1,52 +1,52 @@
 """
-AI Processing Service - Combines OCR and Document Classification
+AI Processing Service - Combines Docling and Document Classification
 """
 import os
 import logging
 import asyncio
 from typing import Dict, List, Optional
 from datetime import datetime
-from .ocr_service import OCRService
+from .docling_service import DoclingService
 from .classification_service import DocumentClassificationService
 from core.config import settings
 
 logger = logging.getLogger(__name__)
 
 class AIProcessingService:
-    """AI processing service for document analysis"""
+    """AI processing service for document analysis using Docling"""
     
     def __init__(self):
         """Initialize AI processing service"""
-        self.ocr_service = OCRService()
+        self.docling_service = DoclingService()
         self.classification_service = DocumentClassificationService()
-        logger.info("✅ AI Processing Service initialized")
+        logger.info("✅ AI Processing Service initialized with Docling")
     
     async def process_document(self, file_path: str, file_type: str) -> Dict:
         """
-        Process document with OCR and classification
+        Process document with Docling and classification
         
         Args:
             file_path: Path to document file
-            file_type: Type of document (image, pdf, etc.)
+            file_type: Type of document (pdf, docx, xlsx, etc.)
             
         Returns:
             Dict containing processing results
         """
         try:
-            logger.info(f"🔄 Processing document: {file_path}")
+            logger.info(f"🔄 Processing document with Docling: {file_path}")
             
-            # Extract text using OCR
-            ocr_result = await self._extract_text(file_path, file_type)
+            # Extract text using Docling
+            docling_result = await self._extract_text_with_docling(file_path, file_type)
             
-            if not ocr_result["success"]:
+            if not docling_result["success"]:
                 return {
                     "success": False,
-                    "error": ocr_result["error"],
+                    "error": docling_result["error"],
                     "processing_time": 0,
                     "timestamp": datetime.now().isoformat()
                 }
             
-            extracted_text = ocr_result["text"]
+            extracted_text = docling_result["text"]
             
             # Classify document
             classification_result = self.classification_service.classify_document(extracted_text)
@@ -62,15 +62,16 @@ class AIProcessingService:
                 "success": True,
                 "file_path": file_path,
                 "file_type": file_type,
-                "processing_time": ocr_result.get("processing_time", 0),
+                "processing_time": docling_result.get("processing_time", 0),
                 "timestamp": datetime.now().isoformat(),
                 
-                # OCR Results
-                "ocr": {
+                # Docling Results
+                "docling": {
                     "text": extracted_text,
-                    "confidence": ocr_result.get("confidence", 0.0),
-                    "word_count": ocr_result.get("word_count", 0),
-                    "lines": ocr_result.get("lines", 0)
+                    "confidence": docling_result.get("confidence", 0.0),
+                    "word_count": docling_result.get("word_count", 0),
+                    "metadata": docling_result.get("metadata", {}),
+                    "processing_method": docling_result.get("processing_method", "docling")
                 },
                 
                 # Classification Results
@@ -92,7 +93,7 @@ class AIProcessingService:
                 }
             }
             
-            logger.info(f"✅ Document processing completed: {file_path}")
+            logger.info(f"✅ Document processing completed with Docling: {file_path}")
             return processing_result
             
         except Exception as e:
@@ -105,69 +106,56 @@ class AIProcessingService:
                 "timestamp": datetime.now().isoformat()
             }
     
-    async def _extract_text(self, file_path: str, file_type: str) -> Dict:
-        """Extract text from document based on file type"""
+    async def _extract_text_with_docling(self, file_path: str, file_type: str) -> Dict:
+        """Extract text from document using Docling"""
         try:
             start_time = datetime.now()
             
-            if file_type.lower() in ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif']:
-                # Process image files
-                if not self.ocr_service.validate_image(file_path):
-                    return {
-                        "success": False,
-                        "error": "Invalid image file",
-                        "text": "",
-                        "confidence": 0.0
-                    }
-                
-                # Preprocess image for better OCR
-                preprocessed_path = self.ocr_service.preprocess_image(file_path)
-                
-                # Extract text
-                result = self.ocr_service.extract_text_from_image(preprocessed_path)
-                
-                # Clean up preprocessed file if different from original
-                if preprocessed_path != file_path and os.path.exists(preprocessed_path):
-                    os.remove(preprocessed_path)
-                
-            elif file_type.lower() == 'pdf':
-                # Process PDF files
-                result = self.ocr_service.extract_text_from_pdf(file_path)
-                
-            else:
+            # Validate document first
+            validation_result = self.docling_service.validate_document(file_path)
+            if not validation_result["valid"]:
                 return {
                     "success": False,
-                    "error": f"Unsupported file type: {file_type}",
+                    "error": validation_result["error"],
                     "text": "",
-                    "confidence": 0.0
+                    "confidence": 0.0,
+                    "word_count": 0
                 }
+            
+            # Process document with Docling
+            docling_result = self.docling_service.process_document(file_path, file_type)
+            
+            if not docling_result["success"]:
+                return docling_result
             
             # Add processing time
             end_time = datetime.now()
             processing_time = (end_time - start_time).total_seconds()
-            result["processing_time"] = processing_time
             
-            return result
+            # Enhance result with processing time
+            docling_result["processing_time"] = processing_time
+            
+            return docling_result
             
         except Exception as e:
-            logger.error(f"❌ Text extraction failed: {e}")
+            logger.error(f"Error extracting text with Docling: {e}")
             return {
                 "success": False,
                 "error": str(e),
                 "text": "",
-                "confidence": 0.0
+                "confidence": 0.0,
+                "word_count": 0
             }
     
     def get_processing_stats(self) -> Dict:
-        """Get AI processing service statistics"""
+        """Get processing statistics"""
         return {
-            "ocr_service": "PaddleOCR",
-            "classification_service": "ML + Keyword-based",
-            "supported_image_formats": ["jpg", "jpeg", "png", "bmp", "tiff", "gif"],
-            "supported_document_types": self.classification_service.document_types,
-            "entity_extraction": True,
-            "summary_generation": True,
-            "preprocessing": True
+            "service_name": "AIProcessingService",
+            "docling_status": self.docling_service.get_service_status(),
+            "classification_status": "active",
+            "total_processed": 0,  # TODO: Implement counter
+            "last_processed": None,
+            "processing_method": "docling"
         }
     
     async def batch_process_documents(self, file_paths: List[str]) -> List[Dict]:
@@ -183,86 +171,33 @@ class AIProcessingService:
         try:
             logger.info(f"🔄 Starting batch processing of {len(file_paths)} documents")
             
-            # Process documents concurrently
-            tasks = []
+            results = []
             for file_path in file_paths:
-                if os.path.exists(file_path):
-                    file_type = file_path.split('.')[-1].lower()
-                    task = self.process_document(file_path, file_type)
-                    tasks.append(task)
+                try:
+                    # Determine file type from extension
+                    file_type = os.path.splitext(file_path)[1][1:].lower()
+                    
+                    # Process document
+                    result = await self.process_document(file_path, file_type)
+                    results.append(result)
+                    
+                except Exception as e:
+                    logger.error(f"Error processing {file_path}: {e}")
+                    results.append({
+                        "success": False,
+                        "file_path": file_path,
+                        "error": str(e),
+                        "processing_time": 0,
+                        "timestamp": datetime.now().isoformat()
+                    })
             
-            # Wait for all tasks to complete
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-            
-            # Filter out exceptions
-            valid_results = []
-            for result in results:
-                if isinstance(result, Exception):
-                    logger.error(f"❌ Batch processing error: {result}")
-                else:
-                    valid_results.append(result)
-            
-            logger.info(f"✅ Batch processing completed: {len(valid_results)}/{len(file_paths)} successful")
-            return valid_results
+            logger.info(f"✅ Batch processing completed: {len(results)} documents processed")
+            return results
             
         except Exception as e:
             logger.error(f"❌ Batch processing failed: {e}")
             return []
     
     def validate_document(self, file_path: str) -> Dict:
-        """
-        Validate document before processing
-        
-        Args:
-            file_path: Path to document file
-            
-        Returns:
-            Dict containing validation results
-        """
-        try:
-            if not os.path.exists(file_path):
-                return {
-                    "valid": False,
-                    "error": "File does not exist",
-                    "file_size": 0,
-                    "file_type": ""
-                }
-            
-            # Get file info
-            file_size = os.path.getsize(file_path)
-            file_type = file_path.split('.')[-1].lower()
-            
-            # Check file size (max 50MB)
-            if file_size > 50 * 1024 * 1024:  # 50MB
-                return {
-                    "valid": False,
-                    "error": "File too large (max 50MB)",
-                    "file_size": file_size,
-                    "file_type": file_type
-                }
-            
-            # Check supported file types
-            supported_types = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif', 'pdf']
-            if file_type not in supported_types:
-                return {
-                    "valid": False,
-                    "error": f"Unsupported file type: {file_type}",
-                    "file_size": file_size,
-                    "file_type": file_type
-                }
-            
-            return {
-                "valid": True,
-                "file_size": file_size,
-                "file_type": file_type,
-                "supported": True
-            }
-            
-        except Exception as e:
-            logger.error(f"❌ Document validation failed: {e}")
-            return {
-                "valid": False,
-                "error": str(e),
-                "file_size": 0,
-                "file_type": ""
-            }
+        """Validate document file"""
+        return self.docling_service.validate_document(file_path)

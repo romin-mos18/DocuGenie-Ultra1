@@ -1,0 +1,57 @@
+{
+  "name": "DocuGenie Ultra",
+  "short_name": "DocuGenie",
+  "description": "AI-powered healthcare document management system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Upload Document",
+      "short_name": "Upload",
+      "description": "Upload a new document",
+      "url": "/documents/upload",
+      "icons": [{ "src": "/icons/upload.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "View Documents",
+      "short_name": "Documents",
+      "description": "View all documents",
+      "url": "/documents",
+      "icons": [{ "src": "/icons/documents.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "categories": ["productivity", "medical", "business"],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    },
+    {
+      "src": "/screenshots/documents.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ]
+}

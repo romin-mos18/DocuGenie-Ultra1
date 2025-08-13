@@ -1,0 +1,266 @@
+{
+  "document_info": {
+    "file_name": "lab_report_001.pdf",
+    "file_type": "PDF",
+    "processing_timestamp": "2025-08-13T00:54:09.353510",
+    "ai_processing_status": "completed",
+    "overall_confidence": 0.783854242076025
+  },
+  "ai_classification": {
+    "document_type": "lab_result",
+    "classification_confidence": 0.40213775509586136,
+    "ai_learning_source": "Basic keyword matching (learning in progress)",
+    "document_category": "Medical Documents"
+  },
+  "extracted_content": {
+    "text_preview": "LABORATORY REPORT\nLabCorp\nReport Date: 08/12/2025\nPatient: Michael Brown\nDOB: 1995-12-15\nMRN: 665680\nTest Results:\nGlucose\nmg/dL\n70-100\n94\nCholesterol\nmg/dL\n<200\n210\nHemoglobin\ng/dL\n12-16\n13.5\nWhite Blood Cells\nK/uL\n4.5-11.0\n7.6\nPlatelets\nK/uL\n150-450\n216",
+    "word_count": 37,
+    "extraction_method": "docling",
+    "ai_models_used": [
+      "DocLayNet",
+      "TableFormer"
+    ]
+  },
+  "key_information": {
+    "primary_entities": {
+      "names": [
+        {
+          "text": "LABORATORY REPORT",
+          "start": 0,
+          "end": 17,
+          "confidence": 0.8333333333333333,
+          "pattern": "\\b[A-Z][a-z]+ [A-Z][a-z]+\\b",
+          "context_boost": true
+        },
+        {
+          "text": "Report Date",
+          "start": 26,
+          "end": 37,
+          "confidence": 0.8333333333333333,
+          "pattern": "\\b[A-Z][a-z]+ [A-Z][a-z]+\\b",
+          "context_boost": true
+        },
+        {
+          "text": "Michael Brown",
+          "start": 59,
+          "end": 72,
+          "confidence": 0.8333333333333333,
+          "pattern": "\\b[A-Z][a-z]+ [A-Z][a-z]+\\b",
+          "context_boost": true
+        },
+        {
+          "text": "Test Results",
+          "start": 101,
+          "end": 113,
+          "confidence": 0.8333333333333333,
+          "pattern": "\\b[A-Z][a-z]+ [A-Z][a-z]+\\b",
+          "context_boost": true
+        },
+        {
+          "text": "White Blood",
+          "start": 193,
+          "end": 204,
+          "confidence": 0.7999999999999999,
+          "pattern": "\\b[A-Z][a-z]+ [A-Z][a-z]+\\b",
+          "context_boost": false
+        }
+      ],
+      "dates": [
+        {
+          "text": "08/12/2025",
+          "start": 39,
+          "end": 49,
+          "confidence": 0.8333333333333333,
+          "pattern": "\\b\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}\\b",
+          "context_boost": true
+        },
+        {
+          "text": "1995-12-15",
+          "start": 78,
+          "end": 88,
+          "confidence": 0.8333333333333333,
+          "pattern": "\\b\\d{4}-\\d{2}-\\d{2}\\b",
+          "context_boost": true
+        }
+      ]
+    },
+    "secondary_entities": {
+      "medical_terms": [
+        {
+          "text": "LABORATORY",
+          "start": 0,
+          "end": 10,
+          "confidence": 0.71,
+          "pattern": "\\b(?:laboratory|lab|test|tests|results)\\b",
+          "context_boost": true
+        },
+        {
+          "text": "Test",
+          "start": 101,
+          "end": 105,
+          "confidence": 0.71,
+          "pattern": "\\b(?:laboratory|lab|test|tests|results)\\b",
+          "context_boost": true
+        },
+        {
+          "text": "Results",
+          "start": 106,
+          "end": 113,
+          "confidence": 0.71,
+          "pattern": "\\b(?:laboratory|lab|test|tests|results)\\b",
+          "context_boost": true
+        }
+      ],
+      "numbers": [
+        {
+          "text": "08",
+          "start": 39,
+          "end": 41,
+          "type": "decimal",
+          "confidence": 0.8,
+          "context": "LABORATORY REPORT\nLabCorp\nReport Date: 08/12/2025\nPatient: Michael Brown\nDOB: 1995-12-15\nMR"
+        },
+        {
+          "text": "12",
+          "start": 42,
+          "end": 44,
+          "type": "decimal",
+          "confidence": 0.8,
+          "context": "LABORATORY REPORT\nLabCorp\nReport Date: 08/12/2025\nPatient: Michael Brown\nDOB: 1995-12-15\nMRN:"
+        },
+        {
+          "text": "2025",
+          "start": 45,
+          "end": 49,
+          "type": "decimal",
+          "confidence": 0.8,
+          "context": "LABORATORY REPORT\nLabCorp\nReport Date: 08/12/2025\nPatient: Michael Brown\nDOB: 1995-12-15\nMRN: 66568"
+        },
+        {
+          "text": "1995",
+          "start": 78,
+          "end": 82,
+          "type": "decimal",
+          "confidence": 0.8,
+          "context": "port Date: 08/12/2025\nPatient: Michael Brown\nDOB: 1995-12-15\nMRN: 665680\nTest Results:\nGlucose\nmg/dL\n70-"
+        },
+        {
+          "text": "12",
+          "start": 83,
+          "end": 85,
+          "type": "decimal",
+          "confidence": 0.8,
+          "context": "Date: 08/12/2025\nPatient: Michael Brown\nDOB: 1995-12-15\nMRN: 665680\nTest Results:\nGlucose\nmg/dL\n70-100"
+        }
+      ]
+    },
+    "document_specific": {
+      "test_results": "Available in extracted text",
+      "normal_ranges": "Identified from patterns",
+      "abnormal_values": "Highlighted by AI analysis"
+    }
+  },
+  "ai_insights": {
+    "summary": "Laboratory test results with patient information and test values",
+    "key_phrases": [
+      "LABORATORY REPORT",
+      "Report Date: 08/12/2025",
+      "Patient: Michael Brown",
+      "Test Results:"
+    ],
+    "action_items": [
+      "Review test results for abnormal values",
+      "Schedule follow-up if needed"
+    ],
+    "confidence_analysis": {
+      "high_confidence": [
+        "names: LABORATORY REPORT",
+        "names: Report Date",
+        "names: Michael Brown",
+        "names: Test Results",
+        "dates: 08/12/2025",
+        "dates: 1995-12-15"
+      ],
+      "medium_confidence": [
+        "names: White Blood",
+        "names: White Blood Cells",
+        "medical_terms: LABORATORY",
+        "medical_terms: Test",
+        "medical_terms: Results",
+        "numbers: 08",
+        "numbers: 12",
+        "numbers: 2025",
+        "numbers: 1995",
+        "numbers: 12",
+        "numbers: 15",
+        "numbers: 665680",
+        "numbers: 70",
+        "numbers: 100",
+        "numbers: 94",
+        "numbers: 200",
+        "numbers: 210",
+        "numbers: 12",
+        "numbers: 16",
+        "numbers: 13.5",
+        "numbers: 4.5",
+        "numbers: 11.0",
+        "numbers: 7.6",
+        "numbers: 150",
+        "numbers: 450",
+        "numbers: 216",
+        "numbers: 08",
+        "numbers: 12",
+        "numbers: 2025",
+        "numbers: 1995",
+        "numbers: 12",
+        "numbers: 15",
+        "numbers: 665680",
+        "numbers: 70",
+        "numbers: 100",
+        "numbers: 94",
+        "numbers: 200",
+        "numbers: 210",
+        "numbers: 12",
+        "numbers: 16",
+        "numbers: 13",
+        "numbers: 5",
+        "numbers: 4",
+        "numbers: 5",
+        "numbers: 11",
+        "numbers: 0",
+        "numbers: 7",
+        "numbers: 6",
+        "numbers: 150",
+        "numbers: 450",
+        "numbers: 216",
+        "identifiers: MRN: 665680",
+        "custom_entities: Date: 08/12/2025",
+        "custom_entities: Patient: Michael Brown",
+        "custom_entities: DOB: 1995-12-15",
+        "custom_entities: MRN: 665680",
+        "custom_entities: Results:\nGlucose",
+        "custom_entities: Date: 08/12/2025",
+        "custom_entities: Patient: Michael Brown",
+        "custom_entities: DOB: 1995-12-15",
+        "custom_entities: MRN: 665680",
+        "custom_entities: Results:\nGlucose"
+      ],
+      "low_confidence": []
+    }
+  },
+  "language_analysis": {
+    "primary_language": "ENGLISH",
+    "detection_confidence": 0.999994899482749,
+    "language_code": "en"
+  },
+  "processing_metadata": {
+    "processing_time": "Real-time",
+    "ai_services_used": [
+      "DocLing AI (DocLayNet + TableFormer)",
+      "Document Classification AI",
+      "Enhanced Entity Extraction AI",
+      "Multi-Language AI"
+    ],
+    "learning_applied": "From 628+ processed documents"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "document_info": {
+    "file_path": "../Testing Documents/Testing Documents/pdf/lab_report_001.pdf",
+    "file_name": "lab_report_001.pdf",
+    "file_type": "pdf",
+    "processing_timestamp": "2025-08-13T00:42:16.085472",
+    "processing_status": "completed"
+  },
+  "extraction_results": {
+    "success": true,
+    "confidence": 0.95,
+    "word_count": 37,
+    "processing_method": "docling",
+    "extracted_text": "LABORATORY REPORT\nLabCorp\nReport Date: 08/12/2025\nPatient: Michael Brown\nDOB: 1995-12-15\nMRN: 665680\nTest Results:\nGlucose\nmg/dL\n70-100\n94\nCholesterol\nmg/dL\n<200\n210\nHemoglobin\ng/dL\n12-16\n13.5\nWhite Blood Cells\nK/uL\n4.5-11.0\n7.6\nPlatelets\nK/uL\n150-450\n216",
+    "metadata": {
+      "ai_models": [
+        "DocLayNet",
+        "TableFormer"
+      ],
+      "layout_analysis": true
+    }
+  },
+  "classification_results": {
+    "document_type": "lab_result",
+    "classification_confidence": 0.40213775509586136,
+    "text_length": 255
+  },
+  "entity_extraction": {
+    "total_entities": 30,
+    "entities": {
+      "dates": [
+        "08/12/2025"
+      ],
+      "names": [
+        "Report Date",
+        "Michael Brown",
+        "Test Results",
+        "White Blood"
+      ],
+      "organizations": [],
+      "locations": [],
+      "medical_terms": [
+        "patient",
+        "laboratory",
+        "test",
+        "result"
+      ],
+      "numbers": [
+        "08",
+        "12",
+        "2025",
+        "1995",
+        "12",
+        "15",
+        "665680",
+        "70",
+        "100",
+        "94",
+        "200",
+        "210",
+        "12",
+        "16",
+        "13.5",
+        "4.5",
+        "11.0",
+        "7.6",
+        "150",
+        "450",
+        "216"
+      ]
+    },
+    "extraction_success": true
+  },
+  "language_analysis": {
+    "primary_language": "en",
+    "language_name": "ENGLISH",
+    "detection_confidence": 0.9999938999342876,
+    "detection_success": true
+  },
+  "processing_summary": {
+    "overall_success": true,
+    "total_processing_time": "N/A",
+    "services_used": [
+      "DocLing Service",
+      "Document Classification Service",
+      "Entity Extraction Service",
+      "Multi-Language Service"
+    ]
+  }
+}

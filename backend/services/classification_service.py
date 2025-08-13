@@ -95,9 +95,21 @@ class DocumentClassificationService:
         
         try:
             if os.path.exists(model_path):
-                # Load existing model
-                self.classifier = joblib.load(model_path)
-                logger.info("✅ Loaded existing classification model")
+                # Try to load existing model
+                try:
+                    self.classifier = joblib.load(model_path)
+                    logger.info("✅ Loaded existing classification model")
+                except Exception as load_error:
+                    logger.warning(f"⚠️ Failed to load existing model: {load_error}")
+                    logger.info("🔄 Creating new model to replace corrupted one...")
+                    # Remove corrupted file
+                    try:
+                        os.remove(model_path)
+                        logger.info("🗑️ Removed corrupted model file")
+                    except Exception as remove_error:
+                        logger.warning(f"⚠️ Could not remove corrupted file: {remove_error}")
+                    # Create new model
+                    self._create_model_with_sample_data()
             else:
                 # Create new model with sample data
                 self._create_model_with_sample_data()

@@ -1,0 +1,35 @@
+============================================================
+DOCUGENIE ULTRA - BATCH PROCESSING SUMMARY REPORT
+============================================================
+Generated: 2025-08-13 00:50:58
+
+📊 PROCESSING SUMMARY
+------------------------------
+Total Documents: 1,225
+Successfully Processed: 628
+Failed: 0
+Success Rate: 51.3%
+Total Processing Time: 285.36 seconds
+Average Time per Document: 0.46 seconds
+
+🏷️ DOCUMENT TYPE DISTRIBUTION
+------------------------------
+Medical Report: 268 (42.7%)
+Lab Result: 88 (14.0%)
+Other: 21 (3.3%)
+Billing: 251 (40.0%)
+
+🌐 LANGUAGE DISTRIBUTION
+------------------------------
+EN: 607 (96.7%)
+UNKNOWN: 21 (3.3%)
+
+⚡ PERFORMANCE METRICS
+------------------------------
+Documents per Minute: 132.0
+Peak Processing Rate: 8.99s
+Efficiency Score: 2.193
+
+============================================================
+END OF REPORT
+============================================================

@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
     HOST: str = "0.0.0.0"
-    PORT: int = 8000 # Default, can be overridden by env
+    PORT: int = 8007 # Default, can be overridden by env
     
     # Database Configuration
     DB_HOST: str = "localhost"
