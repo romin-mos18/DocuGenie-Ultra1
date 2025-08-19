@@ -1,172 +1,78 @@
-from sqlalchemy import Column, String, Text, JSON, Float, Enum, ForeignKey, DateTime, Integer
+"""
+Document Models
+"""
+from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from .base import BaseModel
-import enum
 from datetime import datetime
+from enum import Enum
 
-class DocumentStatus(enum.Enum):
-    PENDING = "pending"
+Base = declarative_base()
+
+class DocumentStatus(Enum):
+    UPLOADED = "uploaded"
     PROCESSING = "processing"
+    PROCESSED = "processed"
+    ERROR = "error"
     COMPLETED = "completed"
-    FAILED = "failed"
-    ANALYZING = "analyzing"
-    APPROVED = "approved"
-    REJECTED = "rejected"
 
-class DocumentType(enum.Enum):
-    CLINICAL_TRIAL = "clinical_trial"
-    LAB_REPORT = "lab_report"
-    MEDICAL_RECORD = "medical_record"
-    CONSENT_FORM = "consent_form"
+class DocumentType(Enum):
+    MEDICAL_REPORT = "medical_report"
+    LAB_RESULT = "lab_result"
     PRESCRIPTION = "prescription"
-    REGULATORY = "regulatory"
-    MEDICAL_IMAGE = "medical_image"
-    RADIOLOGY_REPORT = "radiology_report"
-    PATHOLOGY_REPORT = "pathology_report"
-    DISCHARGE_SUMMARY = "discharge_summary"
-    OPERATION_NOTE = "operation_note"
+    CLINICAL_TRIAL = "clinical_trial"
+    CONSENT_FORM = "consent_form"
+    INSURANCE = "insurance"
+    BILLING = "billing"
+    ADMINISTRATIVE = "administrative"
     OTHER = "other"
+    UNKNOWN = "unknown"
 
-class ProcessingMethod(enum.Enum):
-    DOCLING = "docling"
-    PYMUPDF = "pymupdf"
-    PYTHON_DOCX = "python_docx"
-    PANDAS = "pandas"
-    TESSERACT = "tesseract"
-    TEXT_READER = "text_reader"
-    BASIC = "basic"
-
-class Document(BaseModel):
+class Document(Base):
     __tablename__ = "documents"
     
-    # Basic file information
+    id = Column(Integer, primary_key=True, index=True)
     filename = Column(String(255), nullable=False)
-    original_filename = Column(String(255))
     file_path = Column(String(500), nullable=False)
-    file_size = Column(Float)
-    mime_type = Column(String(100))
-    file_extension = Column(String(20))
+    file_type = Column(String(50), nullable=False)
+    file_size = Column(Integer, nullable=False)
     
-    # Status and workflow
-    status = Column(Enum(DocumentStatus), default=DocumentStatus.PENDING)
-    processing_started_at = Column(DateTime)
-    processing_completed_at = Column(DateTime)
+    # Classification fields
+    document_type = Column(String(50), default="unknown")
+    classification_confidence = Column(Float, default=0.0)
     
-    # Classification
-    document_type = Column(Enum(DocumentType))
-    classification_confidence = Column(Float)
-    classification_result = Column(JSON)
-    
-    # Healthcare specific fields
-    patient_id = Column(String(100))
-    provider_id = Column(String(100))
-    facility_id = Column(String(100))
-    encounter_date = Column(DateTime)
-    
-    # AI processing results - Enhanced for Docling
-    processing_method = Column(Enum(ProcessingMethod))
-    processing_confidence = Column(Float)
-    processing_time = Column(Float)
-    
-    # Text extraction results
-    extracted_text = Column(Text)
-    text_length = Column(Integer)
-    word_count = Column(Integer)
-    line_count = Column(Integer)
+    # Status and timestamps
+    status = Column(String(50), default="uploaded")
+    upload_date = Column(DateTime, default=datetime.utcnow)
+    processed_date = Column(DateTime, nullable=True)
     
     # AI analysis results
-    ai_models_used = Column(JSON)  # List of AI models used
-    layout_analysis = Column(JSON)  # Docling layout analysis results
-    table_recognition = Column(JSON)  # Table structure recognition
-    entities_extracted = Column(JSON)  # Named entities found
-    summary = Column(Text)  # AI-generated summary
+    extracted_text = Column(Text, nullable=True)
+    ai_analysis = Column(Text, nullable=True)  # JSON string
+    entities_extracted = Column(Text, nullable=True)  # JSON string
     
-    # Metadata and processing details
-    processing_metadata = Column(JSON)  # Detailed processing metadata
-    error_logs = Column(JSON)  # Any errors during processing
-    retry_count = Column(Integer, default=0)
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Legacy fields for backward compatibility
-    ocr_text = Column(Text)  # Legacy OCR text field
-    ocr_confidence = Column(Float)  # Legacy OCR confidence
-    ocr_engine = Column(String(50))  # Legacy OCR engine
-    
-    # User and ownership
-    uploaded_by = Column(String, ForeignKey("users.id"))
-    processed_by = Column(String)  # System or user who processed
-    reviewed_by = Column(String, ForeignKey("users.id"))
-    reviewed_at = Column(DateTime)
-    
-    # Relationships - Commented out for now to avoid initialization issues
-    # audit_logs = relationship("AuditLog", back_populates="document")
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if not self.processing_started_at:
-            self.processing_started_at = datetime.utcnow()
-    
-    def update_processing_status(self, status: DocumentStatus, **kwargs):
-        """Update processing status and related fields"""
-        self.status = status
-        
-        if status == DocumentStatus.PROCESSING:
-            self.processing_started_at = datetime.utcnow()
-        elif status in [DocumentStatus.COMPLETED, DocumentStatus.FAILED]:
-            self.processing_completed_at = datetime.utcnow()
-        
-        # Update other fields if provided
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-    
-    def set_processing_results(self, results: dict):
-        """Set processing results from Docling service"""
-        if results.get("success"):
-            self.processing_method = ProcessingMethod(results.get("processing_method", "basic"))
-            self.processing_confidence = results.get("confidence", 0.0)
-            self.extracted_text = results.get("text", "")
-            self.word_count = results.get("word_count", 0)
-            self.processing_metadata = results.get("metadata", {})
-            
-            # Extract AI models used
-            if "ai_models" in results.get("metadata", {}):
-                self.ai_models_used = results["metadata"]["ai_models"]
-            
-            # Set text statistics
-            if self.extracted_text:
-                self.text_length = len(self.extracted_text)
-                self.line_count = len(self.extracted_text.split('\n'))
-            
-            self.status = DocumentStatus.COMPLETED
-        else:
-            self.status = DocumentStatus.FAILED
-            self.error_logs = {"error": results.get("error", "Unknown error")}
-    
-    def get_processing_summary(self) -> dict:
-        """Get a summary of processing results"""
+    def to_dict(self):
+        """Convert document to dictionary for API responses"""
         return {
-            "id": self.id,
+            "id": str(self.id),
             "filename": self.filename,
-            "status": self.status.value,
-            "processing_method": self.processing_method.value if self.processing_method else None,
-            "confidence": self.processing_confidence,
-            "word_count": self.word_count,
-            "processing_time": self.processing_time,
-            "ai_models": self.ai_models_used,
-            "document_type": self.document_type.value if self.document_type else None,
-            "extracted_text_preview": self.extracted_text[:200] + "..." if self.extracted_text and len(self.extracted_text) > 200 else self.extracted_text
+            "file_type": self.file_type,
+            "file_size": self.file_size,
+            "document_type": self.document_type,
+            "documentType": self.document_type.replace('_', ' ').title() if self.document_type != "unknown" else "Unknown",
+            "classification_confidence": self.classification_confidence,
+            "status": self.status,
+            "upload_date": self.upload_date.isoformat() if self.upload_date else None,
+            "processed_date": self.processed_date.isoformat() if self.processed_date else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "confidence": self.classification_confidence,
+            "classification": {
+                "document_type": self.document_type,
+                "confidence": self.classification_confidence,
+                "success": self.status == "processed"
+            }
         }
-    
-    def is_processed(self) -> bool:
-        """Check if document has been processed"""
-        return self.status in [DocumentStatus.COMPLETED, DocumentStatus.APPROVED]
-    
-    def has_errors(self) -> bool:
-        """Check if document has processing errors"""
-        return self.status == DocumentStatus.FAILED or bool(self.error_logs)
-    
-    def get_processing_duration(self) -> float:
-        """Get processing duration in seconds"""
-        if self.processing_started_at and self.processing_completed_at:
-            return (self.processing_completed_at - self.processing_started_at).total_seconds()
-        return None

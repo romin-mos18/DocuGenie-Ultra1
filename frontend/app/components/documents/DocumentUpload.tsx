@@ -31,6 +31,12 @@ import {
   Delete,
   Refresh,
   Upload,
+  TableChart,
+  DataObject,
+  Code,
+  Archive,
+  Lightbulb,
+  Cloud,
 } from '@mui/icons-material';
 
 interface UploadFile {
@@ -51,6 +57,7 @@ interface UploadFile {
 export default function DocumentUpload() {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [fileTypeFilter, setFileTypeFilter] = useState<string>('all');
   const [uploadStats, setUploadStats] = useState({
     total: 0,
     completed: 0,
@@ -102,14 +109,63 @@ export default function DocumentUpload() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
+      // PDF Documents
       'application/pdf': ['.pdf'],
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
+      
+      // Word and Text Documents
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'text/plain': ['.txt'],
+      'text/markdown': ['.md'],
+      'application/rtf': ['.rtf'],
+      
+      // Spreadsheets
+      'application/vnd.ms-excel': ['.xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'text/csv': ['.csv'],
+      
+      // JSON Files
+      'application/json': ['.json'],
+      
+      // Images
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.webp'],
+      
+      // XML Files
+      'application/xml': ['.xml'],
+      'text/xml': ['.xml'],
+      
+      // Additional Text Formats
+      'text/html': ['.html', '.htm'],
+      'text/css': ['.css'],
+      'text/javascript': ['.js'],
+      'application/javascript': ['.js'],
+      
+      // Archive Formats
+      'application/zip': ['.zip'],
+      'application/x-rar-compressed': ['.rar'],
+      'application/x-7z-compressed': ['.7z'],
     },
     maxSize: 100 * 1024 * 1024, // 100MB
     multiple: true,
+    validator: (file) => {
+      // Additional validation for file extensions
+      const allowedExtensions = [
+        '.pdf', '.doc', '.docx', '.txt', '.md', '.rtf',
+        '.xls', '.xlsx', '.csv', '.json', '.xml',
+        '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.webp',
+        '.html', '.htm', '.css', '.js', '.zip', '.rar', '.7z'
+      ];
+      
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      if (!allowedExtensions.includes(fileExtension)) {
+        return {
+          code: 'file-invalid-type',
+          message: `File type ${fileExtension} is not supported. Please upload a valid document, image, or data file.`
+        };
+      }
+      
+      return null;
+    }
   });
 
   const uploadFile = async (file: UploadFile): Promise<boolean> => {
@@ -344,14 +400,52 @@ export default function DocumentUpload() {
 
   const getFileIcon = (file: UploadFile) => {
     const fileType = file.type || '';
+    const fileName = file.name || '';
+    const fileExtension = '.' + fileName.split('.').pop()?.toLowerCase();
     
+    // Images
     if (fileType.startsWith('image/')) {
       return <Image sx={{ color: '#16a34a' }} />;
-    } else if (fileType === 'application/pdf') {
+    }
+    
+    // PDF Documents
+    if (fileType === 'application/pdf' || fileExtension === '.pdf') {
       return <Description sx={{ color: '#dc2626' }} />;
-    } else if (fileType.includes('word') || fileType.includes('document')) {
+    }
+    
+    // Word and Text Documents
+    if (fileType.includes('word') || fileType.includes('document') || 
+        ['.doc', '.docx', '.txt', '.md', '.rtf'].includes(fileExtension)) {
       return <Description sx={{ color: '#3b82f6' }} />;
     }
+    
+    // Spreadsheets
+    if (fileType.includes('excel') || fileType.includes('spreadsheet') || 
+        ['.xls', '.xlsx', '.csv'].includes(fileExtension)) {
+      return <TableChart sx={{ color: '#16a34a' }} />;
+    }
+    
+    // JSON Files
+    if (fileType === 'application/json' || fileExtension === '.json') {
+      return <DataObject sx={{ color: '#ea580c' }} />;
+    }
+    
+    // XML Files
+    if (fileType.includes('xml') || fileExtension === '.xml') {
+      return <Code sx={{ color: '#7c3aed' }} />;
+    }
+    
+    // Archive Files
+    if (fileType.includes('zip') || fileType.includes('rar') || fileType.includes('7z') ||
+        ['.zip', '.rar', '.7z'].includes(fileExtension)) {
+      return <Archive sx={{ color: '#f59e0b' }} />;
+    }
+    
+    // Code Files
+    if (['.html', '.htm', '.css', '.js'].includes(fileExtension)) {
+      return <Code sx={{ color: '#059669' }} />;
+    }
+    
     return <InsertDriveFile sx={{ color: '#6b7280' }} />;
   };
 
@@ -365,7 +459,66 @@ export default function DocumentUpload() {
     }
   };
 
+  const getFileCategory = (file: UploadFile) => {
+    const fileType = file.type || '';
+    const fileName = file.name || '';
+    const fileExtension = '.' + fileName.split('.').pop()?.toLowerCase();
+    
+    // Images
+    if (fileType.startsWith('image/') || ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.tiff', '.webp'].includes(fileExtension)) {
+      return 'Image';
+    }
+    
+    // PDF Documents
+    if (fileType === 'application/pdf' || fileExtension === '.pdf') {
+      return 'PDF';
+    }
+    
+    // Word and Text Documents
+    if (fileType.includes('word') || fileType.includes('document') || 
+        ['.doc', '.docx', '.txt', '.md', '.rtf'].includes(fileExtension)) {
+      return 'Document';
+    }
+    
+    // Spreadsheets
+    if (fileType.includes('excel') || fileType.includes('spreadsheet') || 
+        ['.xls', '.xlsx', '.csv'].includes(fileExtension)) {
+      return 'Spreadsheet';
+    }
+    
+    // JSON Files
+    if (fileType === 'application/json' || fileExtension === '.json') {
+      return 'Data';
+    }
+    
+    // XML Files
+    if (fileType.includes('xml') || fileExtension === '.xml') {
+      return 'Data';
+    }
+    
+    // Archive Files
+    if (fileType.includes('zip') || fileType.includes('rar') || fileType.includes('7z') ||
+        ['.zip', '.rar', '.7z'].includes(fileExtension)) {
+      return 'Archive';
+    }
+    
+    // Code Files
+    if (['.html', '.htm', '.css', '.js'].includes(fileExtension)) {
+      return 'Code';
+    }
+    
+    return 'Other';
+  };
+
   const pendingFiles = files.filter(f => f.status === 'pending').length;
+
+  // Filter files by type
+  const filteredFiles = fileTypeFilter === 'all' 
+    ? files 
+    : files.filter(file => getFileCategory(file) === fileTypeFilter);
+
+  // Get unique file categories for filter
+  const fileCategories = Array.from(new Set(files.map(file => getFileCategory(file)))).sort();
 
   return (
     <Box>
@@ -444,6 +597,34 @@ export default function DocumentUpload() {
                     </Box>
                   </Grid>
                 </Grid>
+                
+                {/* File Type Summary */}
+                {files.length > 0 && (
+                  <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f1f5f9' }}>
+                    <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 600, display: 'block', mb: 1 }}>
+                      File Types:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {fileCategories.map((category) => {
+                        const count = files.filter(file => getFileCategory(file) === category).length;
+                        return (
+                          <Chip
+                            key={category}
+                            label={`${category}: ${count}`}
+                            size="small"
+                            sx={{
+                              height: '20px',
+                              fontSize: '0.65rem',
+                              backgroundColor: '#f3f4f6',
+                              color: '#374151',
+                              fontWeight: 500
+                            }}
+                          />
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                )}
               </Box>
             )}
 
@@ -470,9 +651,47 @@ export default function DocumentUpload() {
               <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600, mb: 1 }}>
                 {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
               </Typography>
-              <Typography variant="body2" sx={{ color: '#6b7280' }}>
+              <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
                 or click to select files
               </Typography>
+              
+              {/* Supported File Types */}
+              <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                justifyContent: 'center', 
+                gap: 1,
+                maxWidth: '400px',
+                margin: '0 auto'
+              }}>
+                {['PDF', 'DOC', 'XLS', 'CSV', 'TXT', 'JSON', 'PNG', 'JPG'].map((type) => (
+                  <Chip
+                    key={type}
+                    label={type}
+                    size="small"
+                    sx={{
+                      backgroundColor: '#f3f4f6',
+                      color: '#374151',
+                      fontSize: '0.7rem',
+                      height: '24px',
+                      '&:hover': {
+                        backgroundColor: '#e5e7eb'
+                      }
+                    }}
+                  />
+                ))}
+                <Chip
+                  label="+ More"
+                  size="small"
+                  sx={{
+                    backgroundColor: '#dbeafe',
+                    color: '#1e40af',
+                    fontSize: '0.7rem',
+                    height: '24px',
+                    fontWeight: 600
+                  }}
+                />
+              </Box>
         </Box>
 
                                     {/* Action Buttons */}
@@ -551,9 +770,49 @@ export default function DocumentUpload() {
               boxShadow: 'none',
               height: 'fit-content'
             }}>
-              <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600, mb: 2 }}>
-                Uploaded Files ({files.length})
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600 }}>
+                  Uploaded Files ({files.length})
+                </Typography>
+                
+                {/* File Type Filter */}
+                {files.length > 0 && (
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ color: '#6b7280', mr: 1 }}>
+                      Filter:
+                    </Typography>
+                    <Chip
+                      label="All"
+                      size="small"
+                      onClick={() => setFileTypeFilter('all')}
+                      sx={{
+                        backgroundColor: fileTypeFilter === 'all' ? '#3b82f6' : '#f3f4f6',
+                        color: fileTypeFilter === 'all' ? 'white' : '#374151',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: fileTypeFilter === 'all' ? '#2563eb' : '#e5e7eb'
+                        }
+                      }}
+                    />
+                    {fileCategories.map((category) => (
+                      <Chip
+                        key={category}
+                        label={category}
+                        size="small"
+                        onClick={() => setFileTypeFilter(category)}
+                        sx={{
+                          backgroundColor: fileTypeFilter === category ? '#3b82f6' : '#f3f4f6',
+                          color: fileTypeFilter === category ? 'white' : '#374151',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            backgroundColor: fileTypeFilter === category ? '#2563eb' : '#e5e7eb'
+                          }
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </Box>
               
                             {/* File Grid */}
               <Box sx={{ 
@@ -563,7 +822,7 @@ export default function DocumentUpload() {
                 maxHeight: 400,
                 overflow: 'auto'
               }}>
-                {files.map((file) => (
+                {filteredFiles.map((file) => (
                   <Box
                     key={file.id}
                     sx={{
@@ -601,9 +860,22 @@ export default function DocumentUpload() {
                         >
                           {file.name || 'Unknown file'}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                          {formatFileSize(file.size || 0)}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                          <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                            {formatFileSize(file.size || 0)}
+                          </Typography>
+                          <Chip
+                            label={getFileCategory(file)}
+                            size="small"
+                            sx={{
+                              height: '18px',
+                              fontSize: '0.65rem',
+                              backgroundColor: '#f3f4f6',
+                              color: '#374151',
+                              fontWeight: 500
+                            }}
+                          />
+                        </Box>
                       </Box>
 
                       <IconButton
@@ -689,156 +961,364 @@ export default function DocumentUpload() {
                     )}
                   </Box>
                 ))}
+                
+                {/* Empty state for filtered results */}
+                {filteredFiles.length === 0 && files.length > 0 && (
+                  <Box sx={{ 
+                    textAlign: 'center', 
+                    py: 4, 
+                    color: 'text.secondary' 
+                  }}>
+                    <Folder sx={{ fontSize: 48, mb: 2, color: 'text.disabled' }} />
+                    <Typography variant="h6" gutterBottom>
+                      No {fileTypeFilter === 'all' ? 'files' : fileTypeFilter} found
+                    </Typography>
+                    <Typography variant="body2">
+                      {fileTypeFilter === 'all' 
+                        ? 'Try uploading some files first' 
+                        : `No ${fileTypeFilter} files match your current filter`
+                      }
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             </Paper>
           )}
         </Grid>
       </Grid>
 
-      {/* AI Processing Features & Supported Formats - Bottom Section */}
+      {/* Three Panel Layout: AI Features, Supported Formats, Service Features */}
       <Box sx={{ mt: 4 }}>
-        <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
-          {/* AI Processing Features */}
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ 
-              p: 3, 
-              backgroundColor: '#ffffff', 
-              border: '1px solid #e5e7eb', 
-              borderRadius: '8px', 
-              boxShadow: 'none',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', lg: 'row' } }}>
+          {/* Panel 1: AI Processing Features */}
+          <Paper sx={{ 
+            flex: 1,
+            p: 3, 
+            backgroundColor: '#ffffff', 
+            border: '1px solid #e5e7eb', 
+            borderRadius: '16px', 
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1, 
+                borderRadius: '50%', 
+                backgroundColor: '#dbeafe', 
+                mr: 2 
+              }}>
+                <Lightbulb sx={{ color: '#3b82f6', fontSize: 20 }} />
+              </Box>
+              <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600 }}>
                 AI Processing Features
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: '50%', 
-                      backgroundColor: '#dbeafe', 
-                      mr: 2 
-                    }}>
-                      <Description sx={{ color: '#3b82f6', fontSize: 16 }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                        OCR Processing
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                        99.8% accuracy rate
-                      </Typography>
-                    </Box>
+            </Box>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#dbeafe'
+                  }}>
+                    <Description sx={{ color: '#3b82f6', fontSize: 16 }} />
                   </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: '50%', 
-                      backgroundColor: '#dcfce7', 
-                      mr: 2 
-                    }}>
-                      <Folder sx={{ color: '#16a34a', fontSize: 16 }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                        Document Classification
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                        Automatic categorization
-                      </Typography>
-                    </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      OCR Processing
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      99.8% accuracy
+                    </Typography>
                   </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: '50%', 
-                      backgroundColor: '#fef3c7', 
-                      mr: 2 
-                    }}>
-                      <CheckCircle sx={{ color: '#f59e0b', fontSize: 16 }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                        HIPAA Compliant
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                        Secure processing
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: '50%', 
-                      backgroundColor: '#fce7f3', 
-                      mr: 2 
-                    }}>
-                      <Upload sx={{ color: '#ec4899', fontSize: 16 }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
-                        Fast Processing
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                        Average 3.2 seconds
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
+                </Box>
+                <Chip label="99.8% accuracy" size="small" sx={{ backgroundColor: '#f3f4f6', color: '#6b7280', ml: 4 }} />
               </Grid>
-            </Paper>
-          </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#fef3c7'
+                  }}>
+                    <CheckCircle sx={{ color: '#f59e0b', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      HIPAA Compliant
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      Secure processing
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#dcfce7'
+                  }}>
+                    <Folder sx={{ color: '#16a34a', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Document Classification
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      Automatic categorization
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#fce7f3'
+                  }}>
+                    <Upload sx={{ color: '#ec4899', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Fast Processing
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      Average 3.2 seconds
+                    </Typography>
+                  </Box>
+                </Box>
+                <Chip label="Avg 3.2s" size="small" sx={{ backgroundColor: '#f3f4f6', color: '#6b7280', ml: 4 }} />
+              </Grid>
+            </Grid>
+          </Paper>
 
-                              {/* Supported Formats */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ 
-              p: 3, 
-              backgroundColor: '#ffffff', 
-              border: '1px solid #e5e7eb', 
-              borderRadius: '8px', 
-              boxShadow: 'none',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600, mb: 2 }}>
+          {/* Panel 2: Supported Formats */}
+          <Paper sx={{ 
+            flex: 1,
+            p: 3, 
+            backgroundColor: '#ffffff', 
+            border: '1px solid #e5e7eb', 
+            borderRadius: '16px', 
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1, 
+                borderRadius: '50%', 
+                backgroundColor: '#f3e8ff', 
+                mr: 2 
+              }}>
+                <Description sx={{ color: '#7c3aed', fontSize: 20 }} />
+              </Box>
+              <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600 }}>
                 Supported Formats
               </Typography>
-              <Box>
-                <Typography variant="body2" sx={{ color: '#6b7280', mb: 1 }}>
-                  • PDF documents
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#6b7280', mb: 1 }}>
-                  • PNG, JPG, JPEG images
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#6b7280', mb: 1 }}>
-                  • DOCX files
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#6b7280', mb: 2 }}>
-                  • Maximum size: 100MB
-                </Typography>
-                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f1f5f9' }}>
-                  <Typography variant="caption" sx={{ color: '#9ca3af', fontStyle: 'italic' }}>
-                    • Unlimited files<br/>
-                    • Batch processing<br/>
-                    • Real-time progress tracking<br/>
-                    • Automatic backup<br/>
-                    • 99.9% uptime guarantee
+            </Box>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#f3e8ff'
+                  }}>
+                    <Description sx={{ color: '#7c3aed', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Documents
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      PDF, DOC, DOCX, TXT, MD, RTF
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#dcfce7'
+                  }}>
+                    <TableChart sx={{ color: '#16a34a', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Spreadsheets
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      XLS, XLSX, CSV
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#fef2f2'
+                  }}>
+                    <DataObject sx={{ color: '#dc2626', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Data Files
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      JSON, XML
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#dcfce7'
+                  }}>
+                    <Image sx={{ color: '#16a34a', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Images
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      PNG, JPG, JPEG, GIF, BMP, TIFF, WEBP
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#dbeafe'
+                  }}>
+                    <Code sx={{ color: '#3b82f6', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Code Files
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      HTML, CSS, JS
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    borderRadius: '50%', 
+                    backgroundColor: '#f3f4f6'
+                  }}>
+                    <Description sx={{ color: '#6b7280', fontSize: 16 }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                      Maximum file size
+                    </Typography>
+                    <Chip label="100MB" size="small" sx={{ backgroundColor: '#f3f4f6', color: '#6b7280' }} />
+                  </Box>
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* Panel 3: Service Features */}
+          <Paper sx={{ 
+            flex: 1,
+            p: 3, 
+            backgroundColor: '#f0f9ff', 
+            border: '1px solid #bae6fd', 
+            borderRadius: '16px', 
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1, 
+                borderRadius: '50%', 
+                backgroundColor: '#dbeafe', 
+                mr: 2 
+              }}>
+                <Cloud sx={{ color: '#3b82f6', fontSize: 20 }} />
+              </Box>
+              <Typography variant="h6" sx={{ color: '#1f2937', fontWeight: 600 }}>
+                Service Features
+              </Typography>
+            </Box>
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3b82f6' }} />
+                  <Typography variant="body2" color="text.primary" fontWeight="500">
+                    Unlimited files
                   </Typography>
                 </Box>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3b82f6' }} />
+                  <Typography variant="body2" color="text.primary" fontWeight="500">
+                    Batch processing
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3b82f6' }} />
+                  <Typography variant="body2" color="text.primary" fontWeight="500">
+                    Real-time progress tracking
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3b82f6' }} />
+                  <Typography variant="body2" color="text.primary" fontWeight="500">
+                    Automatic backup
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#3b82f6' }} />
+                  <Typography variant="body2" color="text.primary" fontWeight="500">
+                    99.9% uptime guarantee
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Box>
       </Box>
     </Box>
   );

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Analysis - Bank Statement | DocuGenie Ultra</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .doc-type {
+            background: #e2e8f0;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .print-export {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+        }
+
+        .card h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .confidence-card {
+            text-align: center;
+        }
+
+        .confidence-circle {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+        }
+
+        .circle-bg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(#3b82f6 0deg 345deg, #e2e8f0 345deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-inner {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .confidence-percent {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .confidence-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .confidence-status {
+            font-size: 12px;
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .card-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .account-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .account-details {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .tabs {
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 32px;
+        }
+
+        .tab-list {
+            display: flex;
+            gap: 32px;
+        }
+
+        .tab {
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 32px;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 16px;
+        }
+
+        .content-text {
+            font-size: 16px;
+            color: #334155;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .alert-box {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .alert-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .alert-text {
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Tab Content Styles */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .transactions-table th {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .transactions-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .transactions-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .transaction-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .type-credit {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .type-debit {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .amount-credit {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .amount-debit {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .entities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .entity-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .entity-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .entity-item {
+            display: inline-block;
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            margin: 4px 4px 4px 0;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .content-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #475569;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .content-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .content-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            padding: 12px 16px;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .content-section .content-preview {
+            margin-top: 0;
+            border: none;
+            border-radius: 0;
+            background: white;
+        }
+
+        .table-header {
+            font-weight: 600;
+            color: #1e293b;
+            background: #f8fafc;
+            padding: 8px 0;
+            border-bottom: 2px solid #e2e8f0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .table-row {
+            padding: 6px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .table-row:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .metadata-section .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+
+        .metadata-section .metadata-item:last-child {
+            border-bottom: none;
+        }
+
+        .metadata-item strong {
+            color: #1e293b;
+            min-width: 140px;
+        }
+
+        .raw-text {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .raw-line {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .raw-line.header-row {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .raw-separator {
+            color: #64748b;
+            margin: 4px 0;
+            font-size: 10px;
+        }
+
+        .raw-ellipsis {
+            color: #64748b;
+            font-style: italic;
+            text-align: center;
+            margin: 8px 0;
+        }
+
+        .content-section .content-preview strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .quality-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .quality-metric {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .quality-metric .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .quality-metric .metric-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .tab {
+            cursor: pointer;
+        }
+
+        @media (max-width: 1024px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 16px;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .transactions-table {
+                font-size: 12px;
+            }
+
+            .transactions-table th,
+            .transactions-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Document Analysis</h1>
+            <p class="subtitle">AI-powered insights and extracted information</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="status-badge">• processed</span>
+                <span class="doc-type">Type: BANK_STATEMENT</span>
+            </div>
+            <a href="#" class="print-export">Print / Export</a>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="cards-grid">
+            <div class="card">
+                <h3>AI Confidence</h3>
+                <div class="confidence-card">
+                    <div class="confidence-circle">
+                        <div class="circle-bg">
+                            <div class="circle-inner">
+                                <div class="confidence-percent">95%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="confidence-label">Model certainty</div>
+                    <div class="confidence-percent" style="font-size: 16px;">95%</div>
+                    <div class="confidence-status">Excellent</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Document Overview</h3>
+                <div class="card-row">
+                    <span class="card-label">Language</span>
+                    <span class="card-value">EN</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Words</span>
+                    <span class="card-value">170</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Entities</span>
+                    <span class="card-value">41</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Size</span>
+                    <span class="card-value">2.2 KB</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Account</h3>
+                <div class="account-name">Richard Jackson</div>
+                <div class="account-details">Account: ****4905</div>
+                <div class="account-details">Bank: TD Bank</div>
+            </div>
+
+            <div class="card">
+                <h3>Statement</h3>
+                <div class="card-row">
+                    <span class="card-label">Provider</span>
+                    <span class="card-value">TD Bank</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Period</span>
+                    <span class="card-value">Aug 2025</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Balance</span>
+                    <span class="card-value">$4,525.23</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab-list">
+                <a href="#" class="tab active" data-tab="overview">Overview</a>
+                <a href="#" class="tab" data-tab="transactions">Transactions</a>
+                <a href="#" class="tab" data-tab="entities">Entities</a>
+                <a href="#" class="tab" data-tab="content">Content Preview</a>
+                <a href="#" class="tab" data-tab="quality">Quality</a>
+            </div>
+        </div>
+
+        <!-- Overview Tab Content -->
+        <div class="main-content tab-content active" id="overview">
+            <h2 class="content-title">What This Document Tells Us</h2>
+            <p class="content-text">
+                This appears to be a monthly bank statement for Richard Jackson with TD Bank showing regular account activity. The statement covers August 2025 with multiple transactions including online transfers, mobile deposits, and ATM withdrawals.
+            </p>
+
+            <div class="alert-box">
+                <div class="alert-title">Financial Summary</div>
+                <div class="alert-text">
+                    Account shows healthy activity with $969.87 in total credits and $853.33 in debits, resulting in a net positive balance change of $116.54 for the period.
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Tab Content -->
+        <div class="main-content tab-content" id="transactions">
+            <h2 class="content-title">Transaction History</h2>
+            <p class="content-text">
+                Detailed view of all transactions extracted from the bank statement, showing dates, descriptions, types, amounts, and running balances.
+            </p>
+
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>07/16/2025</td>
+                        <td>Online Transfer</td>
+                        <td><span class="transaction-type type-debit">Debit</span></td>
+                        <td class="amount-debit">-$474.77</td>
+                        <td>$4,525.23</td>
+                    </tr>
+                    <tr>
+                        <td>07/13/2025</td>
+                        <td>Online Transfer</td>
+                        <td><span class="transaction-type type-debit">Debit</span></td>
+                        <td class="amount-debit">-$378.56</td>
+                        <td>$4,146.67</td>
+                    </tr>
+                    <tr>
+                        <td>07/25/2025</td>
+                        <td>Mobile Deposit</td>
+                        <td><span class="transaction-type type-credit">Credit</span></td>
+                        <td class="amount-credit">+$293.66</td>
+                        <td>$4,440.33</td>
+                    </tr>
+                    <tr>
+                        <td>07/30/2025</td>
+                        <td>Interest Payment</td>
+                        <td><span class="transaction-type type-credit">Credit</span></td>
+                        <td class="amount-credit">+$210.01</td>
+                        <td>$4,650.34</td>
+                    </tr>
+                    <tr>
+                        <td>08/07/2025</td>
+                        <td>Service Fee Credit</td>
+                        <td><span class="transaction-type type-credit">Credit</span></td>
+                        <td class="amount-credit">+$465.20</td>
+                        <td>$5,115.54</td>
+                    </tr>
+                    <tr>
+                        <td>07/18/2025</td>
+                        <td>ATM Withdrawal</td>
+                        <td><span class="transaction-type type-debit">Debit</span></td>
+                        <td class="amount-debit">-$125.50</td>
+                        <td>$4,990.04</td>
+                    </tr>
+                    <tr>
+                        <td>08/01/2025</td>
+                        <td>Direct Deposit</td>
+                        <td><span class="transaction-type type-credit">Credit</span></td>
+                        <td class="amount-credit">+$2,500.00</td>
+                        <td>$7,490.04</td>
+                    </tr>
+                    <tr>
+                        <td>07/28/2025</td>
+                        <td>Online Purchase</td>
+                        <td><span class="transaction-type type-debit">Debit</span></td>
+                        <td class="amount-debit">-$89.95</td>
+                        <td>$7,400.09</td>
+                    </tr>
+                    <tr>
+                        <td>08/10/2025</td>
+                        <td>Online Transfer</td>
+                        <td><span class="transaction-type type-credit">Credit</span></td>
+                        <td class="amount-credit">+$406.24</td>
+                        <td>$5,734.25</td>
+                    </tr>
+                    <tr>
+                        <td>07/23/2025</td>
+                        <td>Direct Deposit</td>
+                        <td><span class="transaction-type type-credit">Credit</span></td>
+                        <td class="amount-credit">+$329.44</td>
+                        <td>$6,063.69</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Entities Tab Content -->
+        <div class="main-content tab-content" id="entities">
+            <h2 class="content-title">Extracted Entities</h2>
+            <p class="content-text">
+                AI-powered entity extraction identified 41 entities from this bank statement, categorized by type for better understanding.
+            </p>
+
+            <div class="entities-grid">
+                <div class="entity-card">
+                    <h4>👤 Names & People</h4>
+                    <div class="entity-item">Richard Jackson</div>
+                    <div class="entity-item">Account Holder</div>
+                    <div class="entity-item">TD Bank</div>
+                    <div class="entity-item">PNC Bank</div>
+                    <div class="entity-item">Morgan Stanley</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>📅 Dates</h4>
+                    <div class="entity-item">07/16/2025</div>
+                    <div class="entity-item">07/13/2025</div>
+                    <div class="entity-item">07/25/2025</div>
+                    <div class="entity-item">07/30/2025</div>
+                    <div class="entity-item">08/07/2025</div>
+                    <div class="entity-item">August 2025</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>💰 Financial Amounts</h4>
+                    <div class="entity-item">$4,525.23</div>
+                    <div class="entity-item">$474.77</div>
+                    <div class="entity-item">$378.56</div>
+                    <div class="entity-item">$293.66</div>
+                    <div class="entity-item">$210.01</div>
+                    <div class="entity-item">$465.20</div>
+                    <div class="entity-item">$2,500.00</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>🔢 Identifiers</h4>
+                    <div class="entity-item">****4905</div>
+                    <div class="entity-item">****1184</div>
+                    <div class="entity-item">****7842</div>
+                    <div class="entity-item">****3752</div>
+                    <div class="entity-item">2025</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>💳 Transaction Types</h4>
+                    <div class="entity-item">Online Transfer</div>
+                    <div class="entity-item">Mobile Deposit</div>
+                    <div class="entity-item">Interest Payment</div>
+                    <div class="entity-item">ATM Withdrawal</div>
+                    <div class="entity-item">Direct Deposit</div>
+                    <div class="entity-item">Service Fee</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>🏦 Financial Terms</h4>
+                    <div class="entity-item">Bank Statement</div>
+                    <div class="entity-item">Monthly Statement</div>
+                    <div class="entity-item">Credit</div>
+                    <div class="entity-item">Debit</div>
+                    <div class="entity-item">Balance</div>
+                    <div class="entity-item">Account Number</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Preview Tab -->
+        <div class="main-content tab-content" id="content">
+            <h2 class="content-title">Raw Content Preview</h2>
+            <p class="content-text">
+                Raw extracted text from the document as processed by DocLing AI. This shows the original structure and content before entity extraction.
+            </p>
+
+            <div class="content-sections">
+                <div class="content-section">
+                    <h4 class="section-header">📋 Document Header Information</h4>
+                    <div class="content-preview">
+<strong>Sheet:</strong> Bank Statement
+<strong>Bank:</strong> TD Bank - Monthly Statement
+<strong>Account Holder:</strong> Richard Jackson
+<strong>Account Number:</strong> ****4905
+<strong>Statement Period:</strong> August 2025
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="section-header">💳 Transaction Data Structure</h4>
+                    <div class="content-preview">
+<div class="table-header">Date         Description       Type      Amount     Balance</div>
+<div class="table-row">07/16        Online Transfer   Debit     474.77     4525.23</div>
+<div class="table-row">07/13        Online Transfer   Debit     378.56     4146.67</div>
+<div class="table-row">07/25        Mobile Deposit    Credit    293.66     4440.33</div>
+<div class="table-row">07/30        Interest Payment  Credit    210.01     4650.34</div>
+<div class="table-row">08/07        Service Fee       Credit    465.20     5115.54</div>
+<div class="table-row">07/18        ATM Withdrawal    Debit     125.50     4990.04</div>
+<div class="table-row">08/01        Direct Deposit    Credit    2500.00    7490.04</div>
+<div class="table-row">07/28        Online Purchase   Debit     89.95      7400.09</div>
+<div class="table-row">08/10        Online Transfer   Credit    406.24     5734.25</div>
+<div class="table-row">07/23        Direct Deposit    Credit    329.44     6063.69</div>
+<div class="table-row">07/27        Online Transfer   Credit    460.14     6523.83</div>
+<div class="table-row">08/07        Interest Payment  Debit     85.90      6437.93</div>
+<div class="table-row">07/24        Online Transfer   Credit    328.01     5328.01</div>
+<div class="table-row">07/29        ATM Deposit       Credit    183.24     5590.76</div>
+<div class="table-row">07/14        ATM Withdrawal    Debit     420.30     5170.46</div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="section-header">⚙️ Processing Metadata</h4>
+                    <div class="content-preview metadata-section">
+<div class="metadata-item"><strong>Processing Method:</strong> pandas Excel processing</div>
+<div class="metadata-item"><strong>File Size:</strong> 2.2 KB (2,231 bytes)</div>
+<div class="metadata-item"><strong>Word Count:</strong> 170 words</div>
+<div class="metadata-item"><strong>Character Count:</strong> 2,231 characters</div>
+<div class="metadata-item"><strong>Extraction Engine:</strong> DocLing AI + Pandas</div>
+<div class="metadata-item"><strong>Processing Time:</strong> 0.22 seconds</div>
+<div class="metadata-item"><strong>Language Detected:</strong> English (EN)</div>
+<div class="metadata-item"><strong>Document Format:</strong> XLSX (Excel)</div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="section-header">🔍 Raw Extraction Sample</h4>
+                    <div class="content-preview raw-text">
+                        <div class="raw-line">Sheet: Bank Statement</div>
+                        <div class="raw-line">TD Bank - Monthly Statement | Unnamed: 1 | Unnamed: 2 | Unnamed: 3 | Unnamed: 4</div>
+                        <div class="raw-line">Account Holder: Richard Jackson | NaN | NaN | NaN | NaN</div>
+                        <div class="raw-line">Account Number: ****4905 | NaN | NaN | NaN | NaN</div>
+                        <div class="raw-line">Statement Period: August 2025 | NaN | NaN | NaN | NaN</div>
+                        <div class="raw-separator">─────────────────────────────────────────────────────────</div>
+                        <div class="raw-line header-row">Date | Description | Type | Amount | Balance</div>
+                        <div class="raw-separator">─────────────────────────────────────────────────────────</div>
+                        <div class="raw-line">07/16 | Online Transfer | Debit | 474.77 | 4525.23</div>
+                        <div class="raw-line">07/13 | Online Transfer | Debit | 378.56 | 4146.67</div>
+                        <div class="raw-line">07/25 | Mobile Deposit | Credit | 293.66 | 4440.33</div>
+                        <div class="raw-ellipsis">... [Additional transaction rows] ...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Tab Content -->
+        <div class="main-content tab-content" id="quality">
+            <h2 class="content-title">Processing Quality Metrics</h2>
+            <p class="content-text">
+                Detailed quality assessment of the document processing, including confidence scores, accuracy metrics, and processing performance.
+            </p>
+
+            <div class="quality-metrics">
+                <div class="quality-metric">
+                    <div class="metric-value">95%</div>
+                    <div class="metric-label">Extraction Confidence</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-label">Classification Accuracy</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">41</div>
+                    <div class="metric-label">Entities Found</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">0.22s</div>
+                    <div class="metric-label">Processing Time</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">170</div>
+                    <div class="metric-label">Words Extracted</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">EN</div>
+                    <div class="metric-label">Language Detected</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">2.2 KB</div>
+                    <div class="metric-label">Document Size</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">Pandas</div>
+                    <div class="metric-label">Processing Method</div>
+                </div>
+            </div>
+
+            <div class="alert-box" style="margin-top: 24px;">
+                <div class="alert-title">Quality Assessment</div>
+                <div class="alert-text">
+                    Excellent extraction quality with high confidence scores. All transaction data successfully parsed with proper structure recognition. Language detection is accurate and entity extraction is comprehensive.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                Designed for: Detail View • Language: EN • Type: bank_statement
+            </div>
+            <div>
+                Last updated from source: Aug 19, 2025 • Provider: TD Bank
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show the selected tab content
+                    const targetTab = this.getAttribute('data-tab');
+                    const targetContent = document.getElementById(targetTab);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Print/Export functionality
+            document.querySelector('.print-export').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.print();
+            });
+        });
+    </script>
+</body>
+</html>

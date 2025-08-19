@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Analysis - Medical Consultation | DocuGenie Ultra</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .doc-type {
+            background: #e2e8f0;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .print-export {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+        }
+
+        .card h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .confidence-card {
+            text-align: center;
+        }
+
+        .confidence-circle {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+        }
+
+        .circle-bg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(#10b981 0deg 216deg, #e2e8f0 216deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-inner {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .confidence-percent {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .confidence-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .confidence-status {
+            font-size: 12px;
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .card-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .card-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .patient-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .patient-details {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .tabs {
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 32px;
+        }
+
+        .tab-list {
+            display: flex;
+            gap: 32px;
+        }
+
+        .tab {
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 32px;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 16px;
+        }
+
+        .content-text {
+            font-size: 16px;
+            color: #334155;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .alert-box {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .alert-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .alert-text {
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Tab Content Styles */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .medical-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .medical-info-table th {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .medical-info-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .medical-info-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .diagnosis-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .diagnosis-primary {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .diagnosis-secondary {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        .entities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .entity-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .entity-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .entity-item {
+            display: inline-block;
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            margin: 4px 4px 4px 0;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .content-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #475569;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .content-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .content-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            padding: 12px 16px;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .content-section .content-preview {
+            margin-top: 0;
+            border: none;
+            border-radius: 0;
+            background: white;
+        }
+
+        .metadata-section .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+
+        .metadata-section .metadata-item:last-child {
+            border-bottom: none;
+        }
+
+        .metadata-item strong {
+            color: #1e293b;
+            min-width: 140px;
+        }
+
+        .raw-text {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .raw-line {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+
+        .raw-line.header-row {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .raw-separator {
+            color: #64748b;
+            margin: 4px 0;
+            font-size: 10px;
+        }
+
+        .raw-ellipsis {
+            color: #64748b;
+            font-style: italic;
+            text-align: center;
+            margin: 8px 0;
+        }
+
+        .content-section .content-preview strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .quality-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .quality-metric {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .quality-metric .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .quality-metric .metric-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        @media (max-width: 1024px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 16px;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .medical-info-table {
+                font-size: 12px;
+            }
+
+            .medical-info-table th,
+            .medical-info-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Document Analysis</h1>
+            <p class="subtitle">AI-powered insights and extracted information</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="status-badge">• processed</span>
+                <span class="doc-type">Type: MEDICAL_CONSULTATION</span>
+            </div>
+            <a href="#" class="print-export">Print / Export</a>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="cards-grid">
+            <div class="card">
+                <h3>AI Confidence</h3>
+                <div class="confidence-card">
+                    <div class="confidence-circle">
+                        <div class="circle-bg">
+                            <div class="circle-inner">
+                                <div class="confidence-percent">60%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="confidence-label">Model certainty</div>
+                    <div class="confidence-percent" style="font-size: 16px;">60%</div>
+                    <div class="confidence-status">Good</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Document Overview</h3>
+                <div class="card-row">
+                    <span class="card-label">Language</span>
+                    <span class="card-value">EN</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Words</span>
+                    <span class="card-value">41</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Entities</span>
+                    <span class="card-value">20</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Size</span>
+                    <span class="card-value">311 B</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Patient</h3>
+                <div class="patient-name">Michael Brown</div>
+                <div class="patient-details">DOB: Dec 28, 1987</div>
+                <div class="patient-details">MRN: 371007</div>
+            </div>
+
+            <div class="card">
+                <h3>Consultation</h3>
+                <div class="card-row">
+                    <span class="card-label">Provider</span>
+                    <span class="card-value">Dr. Robert Martinez</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Date</span>
+                    <span class="card-value">Aug 12, 2025</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Diagnosis</span>
+                    <span class="card-value">Diabetes Type 2</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab-list">
+                <a href="#" class="tab active" data-tab="overview">Overview</a>
+                <a href="#" class="tab" data-tab="medical-info">Medical Info</a>
+                <a href="#" class="tab" data-tab="entities">Entities</a>
+                <a href="#" class="tab" data-tab="content">Content Preview</a>
+                <a href="#" class="tab" data-tab="quality">Quality</a>
+            </div>
+        </div>
+
+        <!-- Overview Tab Content -->
+        <div class="main-content tab-content active" id="overview">
+            <h2 class="content-title">What This Document Tells Us</h2>
+            <p class="content-text">
+                This appears to be a medical consultation report for Michael Brown with Dr. Robert Martinez showing a routine diabetes follow-up consultation. The document includes patient demographics, consultation details, primary diagnosis, and treatment plan recommendations.
+            </p>
+
+            <div class="alert-box">
+                <div class="alert-title">Medical Summary</div>
+                <div class="alert-text">
+                    Patient consultation for Diabetes Type 2 management including medication management, lifestyle modifications, and scheduled 3-month follow-up appointment.
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Info Tab Content -->
+        <div class="main-content tab-content" id="medical-info">
+            <h2 class="content-title">Medical Information</h2>
+            <p class="content-text">
+                Detailed medical consultation information extracted from the document, including patient demographics, consultation details, and treatment recommendations.
+            </p>
+
+            <table class="medical-info-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Details</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Patient Information</strong></td>
+                        <td>Michael Brown, DOB: 1987-12-28, MRN: 371007</td>
+                        <td><span class="diagnosis-badge diagnosis-primary">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Consultation Date</strong></td>
+                        <td>August 12, 2025</td>
+                        <td><span class="diagnosis-badge diagnosis-primary">Completed</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Attending Physician</strong></td>
+                        <td>Dr. Robert Martinez</td>
+                        <td><span class="diagnosis-badge diagnosis-primary">Primary</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Primary Diagnosis</strong></td>
+                        <td>Diabetes Type 2</td>
+                        <td><span class="diagnosis-badge diagnosis-primary">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Treatment Plan</strong></td>
+                        <td>1. Medication management<br>2. Lifestyle modifications<br>3. Follow-up in 3 months</td>
+                        <td><span class="diagnosis-badge diagnosis-secondary">Ongoing</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Document Type</strong></td>
+                        <td>Medical Consultation Report</td>
+                        <td><span class="diagnosis-badge diagnosis-primary">Standard</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Entities Tab Content -->
+        <div class="main-content tab-content" id="entities">
+            <h2 class="content-title">Extracted Entities</h2>
+            <p class="content-text">
+                AI-powered entity extraction identified 20 entities from this medical consultation report, categorized by type for better clinical understanding.
+            </p>
+
+            <div class="entities-grid">
+                <div class="entity-card">
+                    <h4>👤 Patient & People</h4>
+                    <div class="entity-item">Michael Brown</div>
+                    <div class="entity-item">Dr. Robert Martinez</div>
+                    <div class="entity-item">Patient</div>
+                    <div class="entity-item">Physician</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>📅 Dates & Times</h4>
+                    <div class="entity-item">08/12/2025</div>
+                    <div class="entity-item">1987-12-28</div>
+                    <div class="entity-item">3 months</div>
+                    <div class="entity-item">Follow-up</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>🏥 Medical Terms</h4>
+                    <div class="entity-item">Diabetes Type 2</div>
+                    <div class="entity-item">Primary Diagnosis</div>
+                    <div class="entity-item">Treatment Plan</div>
+                    <div class="entity-item">Medical Consultation</div>
+                    <div class="entity-item">Medication</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>🔢 Medical Identifiers</h4>
+                    <div class="entity-item">MRN: 371007</div>
+                    <div class="entity-item">2025</div>
+                    <div class="entity-item">1987</div>
+                    <div class="entity-item">12</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>📋 Clinical Procedures</h4>
+                    <div class="entity-item">Medication management</div>
+                    <div class="entity-item">Lifestyle modifications</div>
+                    <div class="entity-item">Consultation</div>
+                    <div class="entity-item">Follow-up</div>
+                </div>
+
+                <div class="entity-card">
+                    <h4>📄 Document Elements</h4>
+                    <div class="entity-item">Report</div>
+                    <div class="entity-item">Information</div>
+                    <div class="entity-item">Details</div>
+                    <div class="entity-item">Plan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Preview Tab -->
+        <div class="main-content tab-content" id="content">
+            <h2 class="content-title">Raw Content Preview</h2>
+            <p class="content-text">
+                Raw extracted text from the medical consultation document as processed by DocLing AI. This shows the original structure and content before entity extraction.
+            </p>
+
+            <div class="content-sections">
+                <div class="content-section">
+                    <h4 class="section-header">📋 Document Header</h4>
+                    <div class="content-preview">
+<strong>Document Type:</strong> Medical Consultation Report
+<strong>Processing Method:</strong> python-docx
+<strong>Document Structure:</strong> 14 paragraphs, 0 tables
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="section-header">👤 Patient Information Section</h4>
+                    <div class="content-preview">
+<strong>Patient Information</strong>
+Name: Michael Brown
+Date of Birth: 1987-12-28
+MRN: 371007
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="section-header">🩺 Consultation Details</h4>
+                    <div class="content-preview">
+<strong>Consultation Details</strong>
+Date: 08/12/2025
+Physician: Dr. Robert Martinez
+
+<strong>Diagnosis</strong>
+Primary Diagnosis: Diabetes Type 2
+
+<strong>Treatment Plan</strong>
+1. Medication management
+2. Lifestyle modifications
+3. Follow-up in 3 months
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="section-header">⚙️ Processing Metadata</h4>
+                    <div class="content-preview metadata-section">
+<div class="metadata-item"><strong>Processing Method:</strong> python-docx</div>
+<div class="metadata-item"><strong>File Size:</strong> 311 bytes</div>
+<div class="metadata-item"><strong>Word Count:</strong> 41 words</div>
+<div class="metadata-item"><strong>Paragraphs:</strong> 14 paragraphs</div>
+<div class="metadata-item"><strong>Tables:</strong> 0 tables</div>
+<div class="metadata-item"><strong>Processing Time:</strong> 0.01 seconds</div>
+<div class="metadata-item"><strong>Language:</strong> English (EN)</div>
+<div class="metadata-item"><strong>Document Format:</strong> DOCX (Word)</div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="section-header">🔍 Raw Extraction Sample</h4>
+                    <div class="content-preview raw-text">
+                        <div class="raw-line header-row">Medical Consultation Report</div>
+                        <div class="raw-separator">─────────────────────────────────────────</div>
+                        <div class="raw-line">Patient Information</div>
+                        <div class="raw-line">Name: Michael Brown</div>
+                        <div class="raw-line">Date of Birth: 1987-12-28</div>
+                        <div class="raw-line">MRN: 371007</div>
+                        <div class="raw-separator">─────────────────────────────────────────</div>
+                        <div class="raw-line">Consultation Details</div>
+                        <div class="raw-line">Date: 08/12/2025</div>
+                        <div class="raw-line">Physician: Dr. Robert Martinez</div>
+                        <div class="raw-separator">─────────────────────────────────────────</div>
+                        <div class="raw-line header-row">Diagnosis</div>
+                        <div class="raw-line">Primary Diagnosis: Diabetes Type 2</div>
+                        <div class="raw-separator">─────────────────────────────────────────</div>
+                        <div class="raw-line header-row">Treatment Plan</div>
+                        <div class="raw-line">1. Medication management</div>
+                        <div class="raw-line">2. Lifestyle modifications</div>
+                        <div class="raw-line">3. Follow-up in 3 months</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Tab Content -->
+        <div class="main-content tab-content" id="quality">
+            <h2 class="content-title">Processing Quality Metrics</h2>
+            <p class="content-text">
+                Detailed quality assessment of the medical document processing, including confidence scores, accuracy metrics, and processing performance.
+            </p>
+
+            <div class="quality-metrics">
+                <div class="quality-metric">
+                    <div class="metric-value">60%</div>
+                    <div class="metric-label">Classification Confidence</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">95%</div>
+                    <div class="metric-label">Text Extraction</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">20</div>
+                    <div class="metric-label">Entities Found</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">0.01s</div>
+                    <div class="metric-label">Processing Time</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">41</div>
+                    <div class="metric-label">Words Extracted</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">EN</div>
+                    <div class="metric-label">Language Detected</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">311 B</div>
+                    <div class="metric-label">Document Size</div>
+                </div>
+
+                <div class="quality-metric">
+                    <div class="metric-value">DocX</div>
+                    <div class="metric-label">Processing Method</div>
+                </div>
+            </div>
+
+            <div class="alert-box" style="margin-top: 24px;">
+                <div class="alert-title">Clinical Quality Assessment</div>
+                <div class="alert-text">
+                    Good medical document processing with clear patient identification and clinical information extraction. All critical medical entities successfully identified including patient demographics, diagnosis, and treatment plan. Document structure recognition is excellent for clinical workflows.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                Designed for: Detail View • Language: EN • Type: medical_consultation
+            </div>
+            <div>
+                Last updated from source: Aug 12, 2025 • Provider: Dr. Robert Martinez
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show the selected tab content
+                    const targetTab = this.getAttribute('data-tab');
+                    const targetContent = document.getElementById(targetTab);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Print/Export functionality
+            document.querySelector('.print-export').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.print();
+            });
+        });
+    </script>
+</body>
+</html>

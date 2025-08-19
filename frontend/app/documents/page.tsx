@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { safeStringValue, safeLanguage, safeEntityCount } from '../../utils/safeguards'
 
 import MainLayout from '../components/layout/MainLayout'
 import NotificationPortal from '../components/common/NotificationPortal'
@@ -74,7 +75,8 @@ import {
   Email as EnvelopeIcon,
   Lightbulb,
   Translate,
-  Insights
+  Insights,
+  Folder
 } from '@mui/icons-material'
 
 export default function DocumentsPage() {
@@ -110,6 +112,7 @@ export default function DocumentsPage() {
     const fetchDocuments = async () => {
       try {
         setLoading(true)
+        // Use compatibility endpoint that routes to AI processing
         const response = await fetch('http://localhost:8007/api/v1/documents')
         if (response.ok) {
           const data = await response.json()
@@ -136,7 +139,7 @@ export default function DocumentsPage() {
             return ({
             id: doc.id,
             name: doc.filename,
-            type: doc.document_type,
+            type: getSmartDocumentType(doc.filename, doc.document_type, doc.ai_analysis),
             status: doc.status,
               uploadDate: doc.upload_date,
               size: doc.file_size,
@@ -153,7 +156,7 @@ export default function DocumentsPage() {
               entities: mergedEntities,
               doclingResult: doc.docling_result || {},
               aiAnalysis: doc.ai_analysis || {},
-              documentType: doc.document_type || 'unknown'
+              documentType: getSmartDocumentType(doc.filename, doc.document_type, doc.ai_analysis)
             })
           })
           
@@ -202,6 +205,124 @@ export default function DocumentsPage() {
       case 'failed': return 'error'
       default: return 'default'
     }
+  }
+
+  const getSmartDocumentType = (filename: string, documentType?: string, aiAnalysis?: any) => {
+    if (!filename) return 'Document'
+    
+    // Priority 1: Use AI-classified document type from backend (most accurate)
+    // Check multiple possible locations for AI classification
+    const aiDocType = aiAnalysis?.classification?.document_type || 
+                     aiAnalysis?.document_type || 
+                     documentType;
+    
+    if (aiDocType && aiDocType !== 'unknown' && aiDocType !== 'other' && aiDocType !== 'Unknown') {
+      console.log(`🤖 Using AI classification: ${aiDocType} for ${filename}`);
+      return formatDocumentType(aiDocType)
+    }
+    
+    // Log when falling back to filename
+    console.warn(`⚠️ No AI classification available for ${filename}, falling back to content analysis`);
+    console.log('AI Analysis:', aiAnalysis);
+    console.log('Document Type:', documentType);
+    
+    // Priority 2: Try to use any available classification data
+    if (documentType && documentType !== 'Unknown' && documentType !== 'unknown' && documentType !== 'other') {
+      return formatDocumentType(documentType)
+    }
+    
+    // Priority 3: Return generic type - ALL classification should come from AI content analysis
+    return 'Document - Needs AI Analysis'
+    
+    // All filename-based classification removed - use AI content analysis only
+    
+
+    
+
+    
+
+    
+
+    
+    // Technical/IT Documents
+    if (filenameLower.includes('manual') || filenameLower.includes('guide')) return 'Manual/Guide'
+    if (filenameLower.includes('specification') || filenameLower.includes('spec')) return 'Specification'
+    if (filenameLower.includes('code') || filenameLower.includes('script')) return 'Code Document'
+    if (filenameLower.includes('database') || filenameLower.includes('schema')) return 'Database Schema'
+    if (filenameLower.includes('api') || filenameLower.includes('interface')) return 'API Documentation'
+    if (filenameLower.includes('architecture') || filenameLower.includes('design')) return 'System Architecture'
+    if (filenameLower.includes('test') || filenameLower.includes('qa')) return 'Test Document'
+    if (filenameLower.includes('deployment') || filenameLower.includes('release')) return 'Deployment Guide'
+    
+    // Creative/Media Documents
+    if (filenameLower.includes('design') || filenameLower.includes('mockup')) return 'Design Document'
+    if (filenameLower.includes('presentation') || filenameLower.includes('slide')) return 'Presentation'
+    if (filenameLower.includes('brochure') || filenameLower.includes('mockup')) return 'Marketing Material'
+    if (filenameLower.includes('logo') || filenameLower.includes('brand')) return 'Brand Asset'
+    if (filenameLower.includes('photo') || filenameLower.includes('image')) return 'Photo/Image'
+    if (filenameLower.includes('video') || filenameLower.includes('audio')) return 'Media File'
+    if (filenameLower.includes('template') || filenameLower.includes('layout')) return 'Template'
+    
+    // Try to extract meaningful info from filename patterns
+    const words = filenameLower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(word => word.length > 2)
+    
+    // Look for common document patterns
+    for (const word of words) {
+      if (['report', 'form', 'application', 'request', 'notice', 'schedule', 'plan', 'analysis', 'review', 'summary'].includes(word)) {
+        return word.charAt(0).toUpperCase() + word.slice(1) + ' Document'
+      }
+    }
+    
+    // If filename contains numbers, it might be a numbered document
+    if (/\d+/.test(filenameLower)) {
+      if (filenameLower.includes('report')) return 'Report'
+      if (filenameLower.includes('document')) return 'Document'
+      if (filenameLower.includes('file')) return 'File'
+    }
+    
+    // Default based on file extension
+    const ext = filename.split('.').pop()?.toLowerCase()
+    if (['pdf'].includes(ext || '')) return 'PDF Document'
+    if (['doc', 'docx'].includes(ext || '')) return 'Word Document'
+    if (['xls', 'xlsx'].includes(ext || '')) return 'Spreadsheet'
+    if (['txt', 'md', 'rtf'].includes(ext || '')) return 'Text Document'
+    if (['json', 'xml'].includes(ext || '')) return 'Data File'
+    if (filenameLower.includes('png') || filenameLower.includes('jpg') || filenameLower.includes('jpeg') || filenameLower.includes('gif') || filenameLower.includes('bmp') || filenameLower.includes('tiff')) return 'Image File'
+    if (['zip', 'rar', '7z'].includes(ext || '')) return 'Archive File'
+    
+    return 'Document'
+  }
+
+  const formatDocumentType = (docType: string) => {
+    // Convert backend document types to user-friendly names
+    const typeMapping: Record<string, string> = {
+      // Medical/Healthcare
+      'medical_report': 'Medical Report',
+      'lab_result': 'Lab Result',
+      'prescription': 'Prescription',
+      'clinical_trial': 'Clinical Trial',
+      'consent_form': 'Consent Form',
+      
+      // Financial/Business
+      'billing': 'Billing',
+      'insurance': 'Insurance',
+      'administrative': 'Administrative',
+      
+      // Default formatting
+      'other': 'Document',
+      'unknown': 'Document'
+    }
+    
+    // If we have a mapping, use it
+    if (typeMapping[docType]) {
+      return typeMapping[docType]
+    }
+    
+    // Otherwise, format the type nicely (e.g., "medical_report" -> "Medical Report")
+    return docType
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
   }
 
   // Filter documents based on search and status
@@ -382,7 +503,7 @@ export default function DocumentsPage() {
   function CircularConfidence({ value }: { value: number }) {
     const radius = 48;
     const circumference = 2 * Math.PI * radius;
-    const dash = (value / 100) * circumference;
+    const dash = value * circumference; // value is 0-1, use directly for arc calculation
     return (
       <svg viewBox="0 0 120 120" style={{ width: '112px', height: '112px' }}>
         {/* Background circle */}
@@ -428,7 +549,7 @@ export default function DocumentsPage() {
             fontFamily: 'system-ui, -apple-system, sans-serif'
           }}
         >
-          {value}%
+          {(value * 100).toFixed(2)}%
         </text>
       </svg>
     );
@@ -567,7 +688,7 @@ export default function DocumentsPage() {
                         entities: mergedEntities,
                         doclingResult: doc.docling_result || {},
                         aiAnalysis: doc.ai_analysis || {},
-                        documentType: doc.document_type || 'unknown'
+                        documentType: getSmartDocumentType(doc.filename, doc.document_type, doc.ai_analysis)
                       })
                     })
                     setDocuments(transformedDocuments)
@@ -592,6 +713,14 @@ export default function DocumentsPage() {
               href="/documents/upload"
             >
               Upload Document
+            </Button>
+            <Button 
+              variant="outlined" 
+              startIcon={<Folder />}
+              href="/documents/folders"
+              sx={{ borderColor: '#7C3AED', color: '#7C3AED', '&:hover': { borderColor: '#6D28D9', backgroundColor: 'rgba(124, 58, 237, 0.04)' } }}
+            >
+              Folders
             </Button>
           </Box>
         </Box>
@@ -998,7 +1127,7 @@ export default function DocumentsPage() {
                           color: '#6B7280' 
                         }}>DOCUMENT OVERVIEW</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px' }}>
-                          <InfoRow k="Language" v={currentSelectedDocument?.aiAnalysis?.language || 'EN'} />
+                          <InfoRow k="Language" v={safeLanguage(currentSelectedDocument?.aiAnalysis?.language)} />
                           <InfoRow k="Words" v={currentSelectedDocument?.aiAnalysis?.word_count || '0'} />
                           <InfoRow k="Entities" v={currentSelectedDocument?.entitiesFound?.toString() || '0'} />
                           <InfoRow k="Size" v={currentSelectedDocument?.size || '0 KB'} />
@@ -1350,7 +1479,7 @@ No content preview available. The document may still be processing or content ex
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                             <QualityCard 
                               label="AI Confidence" 
-                              value={`${currentSelectedDocument?.classificationConfidence || 0}%`}
+                              value={`${((currentSelectedDocument?.classificationConfidence || 0) * 100).toFixed(2)}%`}
                               hint="Overall certainty in extraction/classification." 
                             />
                             <QualityCard 
@@ -1395,7 +1524,7 @@ No content preview available. The document may still be processing or content ex
                       color: '#6B7280' 
                     }}>
                       <div>
-                        Designed for: <span style={{ fontWeight: '500' }}>Detail View</span> • Language: {currentSelectedDocument?.aiAnalysis?.language || 'EN'} • Type: {currentSelectedDocument?.documentType || 'unknown'}
+                        Designed for: <span style={{ fontWeight: '500' }}>Detail View</span> • Language: {safeLanguage(currentSelectedDocument?.aiAnalysis?.language)} • Type: {currentSelectedDocument?.documentType || 'unknown'}
                       </div>
                       <div>
                         Last updated from source: {currentSelectedDocument?.uploadDate ? new Date(currentSelectedDocument.uploadDate).toLocaleDateString() : 'Unknown'} • Provider: {currentSelectedDocument?.providerName || 'Unknown'}

@@ -115,12 +115,20 @@ class DoclingService:
                 result = self._process_pdf_real(file_path)
             elif file_type.lower() in ['docx', 'doc']:
                 result = self._process_word_document_real(file_path)
-            elif file_type.lower() in ['xlsx', 'xls']:
+            elif file_type.lower() in ['xlsx', 'xls', 'csv']:
                 result = self._process_excel_document_real(file_path)
-            elif file_type.lower() in ['jpg', 'jpeg', 'png', 'bmp', 'tiff']:
+            elif file_type.lower() in ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif', 'webp']:
                 result = self._process_image_real(file_path)
-            elif file_type.lower() == 'txt':
+            elif file_type.lower() in ['txt', 'md', 'rtf']:
                 result = self._process_text_document_real(file_path)
+            elif file_type.lower() == 'json':
+                result = self._process_json_document_real(file_path)
+            elif file_type.lower() == 'xml':
+                result = self._process_xml_document_real(file_path)
+            elif file_type.lower() in ['html', 'htm', 'css', 'js']:
+                result = self._process_code_document_real(file_path)
+            elif file_type.lower() in ['zip', 'rar', '7z']:
+                result = self._process_archive_document_real(file_path)
             else:
                 return self._create_error_result(f"Unsupported file type: {file_type}", start_time)
             
@@ -440,7 +448,10 @@ class DoclingService:
             "python_docx_available": PYTHON_DOCX_AVAILABLE,
             "pandas_available": PANDAS_AVAILABLE,
             "pillow_tesseract_available": PILLOW_TESSERACT_AVAILABLE,
-            "supported_formats": ["pdf", "docx", "doc", "xlsx", "xls", "jpg", "jpeg", "png", "bmp", "tiff", "txt"],
+            "supported_formats": [
+                "pdf", "docx", "doc", "xlsx", "xls", "csv", "jpg", "jpeg", "png", "bmp", "tiff", "gif", "webp",
+                "txt", "md", "rtf", "json", "xml", "html", "htm", "css", "js", "zip", "rar", "7z"
+            ],
             "ai_models": ["DocLayNet", "TableFormer"] if self.docling_available else [],
             "capabilities": {
                 "layout_analysis": self.docling_available,
@@ -463,7 +474,10 @@ class DoclingService:
         if file_size > max_size:
             return {"valid": False, "error": f"File too large: {file_size / (1024*1024):.2f}MB (max: 100MB)"}
         
-        allowed_extensions = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.txt']
+        allowed_extensions = [
+            '.pdf', '.docx', '.doc', '.xlsx', '.xls', '.csv', '.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif', '.webp',
+            '.txt', '.md', '.rtf', '.json', '.xml', '.html', '.htm', '.css', '.js', '.zip', '.rar', '.7z'
+        ]
         file_ext = os.path.splitext(file_path)[1].lower()
         
         if file_ext not in allowed_extensions:
@@ -492,6 +506,10 @@ class DoclingService:
                 "primary": "pandas",
                 "capabilities": ["Sheet processing", "Data extraction", "Table structure"]
             },
+            "csv": {
+                "primary": "pandas",
+                "capabilities": ["Data extraction", "Table structure", "Column analysis"]
+            },
             "images": {
                 "primary": "Tesseract OCR" if PILLOW_TESSERACT_AVAILABLE else "Not available",
                 "capabilities": ["Text extraction", "Image processing"]
@@ -499,5 +517,107 @@ class DoclingService:
             "txt": {
                 "primary": "Direct reading",
                 "capabilities": ["Text extraction", "Encoding detection"]
+            },
+            "json": {
+                "primary": "JSON parser",
+                "capabilities": ["Data extraction", "Structure analysis", "Schema detection"]
+            },
+            "xml": {
+                "primary": "XML parser",
+                "capabilities": ["Data extraction", "Structure analysis", "Tag parsing"]
+            },
+            "code": {
+                "primary": "Text processing",
+                "capabilities": ["Syntax highlighting", "Structure analysis", "Comment extraction"]
+            },
+            "archive": {
+                "primary": "Archive extraction",
+                "capabilities": ["File listing", "Content preview", "Metadata extraction"]
             }
         }
+
+    def _process_json_document_real(self, file_path: str) -> Dict:
+        """Process JSON document with real parsing capabilities"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                text_content = json.dumps(data, indent=2, ensure_ascii=False)
+                
+            return self._create_success_result(
+                text_content,
+                0.95,
+                "json_parser",
+                {"format": "json", "structure": "parsed", "encoding": "utf-8"}
+            )
+        except Exception as e:
+            logger.error(f"Error processing JSON: {e}")
+            return self._create_error_result(f"JSON processing failed: {str(e)}")
+
+    def _process_xml_document_real(self, file_path: str) -> Dict:
+        """Process XML document with real parsing capabilities"""
+        try:
+            import xml.etree.ElementTree as ET
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            # Convert XML to readable text
+            text_content = ET.tostring(root, encoding='unicode', method='xml')
+            
+            return self._create_success_result(
+                text_content,
+                0.90,
+                "xml_parser",
+                {"format": "xml", "root_tag": root.tag, "elements": len(root)}
+            )
+        except Exception as e:
+            logger.error(f"Error processing XML: {e}")
+            return self._create_error_result(f"XML processing failed: {str(e)}")
+
+    def _process_code_document_real(self, file_path: str) -> Dict:
+        """Process code documents (HTML, CSS, JS) with real parsing capabilities"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                text_content = file.read()
+                
+            return self._create_success_result(
+                text_content,
+                0.95,
+                "code_parser",
+                {"format": "code", "lines": len(text_content.splitlines()), "encoding": "utf-8"}
+            )
+        except Exception as e:
+            logger.error(f"Error processing code file: {e}")
+            return self._create_error_result(f"Code file processing failed: {str(e)}")
+
+    def _process_archive_document_real(self, file_path: str) -> Dict:
+        """Process archive files with real extraction capabilities"""
+        try:
+            import zipfile
+            import tarfile
+            
+            archive_info = []
+            
+            if file_path.endswith('.zip'):
+                with zipfile.ZipFile(file_path, 'r') as zip_file:
+                    file_list = zip_file.namelist()
+                    archive_info = [f"Archive: {os.path.basename(file_path)}", f"Files: {len(file_list)}"]
+                    archive_info.extend([f"  - {f}" for f in file_list[:10]])  # Show first 10 files
+                    if len(file_list) > 10:
+                        archive_info.append(f"  ... and {len(file_list) - 10} more files")
+                    
+            elif file_path.endswith('.rar'):
+                archive_info = [f"Archive: {os.path.basename(file_path)}", "RAR format - content preview not available"]
+            elif file_path.endswith('.7z'):
+                archive_info = [f"Archive: {os.path.basename(file_path)}", "7Z format - content preview not available"]
+            
+            text_content = "\n".join(archive_info)
+            
+            return self._create_success_result(
+                text_content,
+                0.80,
+                "archive_parser",
+                {"format": "archive", "type": os.path.splitext(file_path)[1][1:]}
+            )
+        except Exception as e:
+            logger.error(f"Error processing archive: {e}")
+            return self._create_error_result(f"Archive processing failed: {str(e)}")

@@ -391,7 +391,7 @@ export default function AIFeaturesPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {item.classificationConfidence ? `${item.classificationConfidence}%` : 'N/A'}
+                        {item.classificationConfidence ? `${(item.classificationConfidence * 100).toFixed(2)}%` : 'N/A'}
                       </TableCell>
                       <TableCell>
                         {item.entitiesFound || 'Processing...'}
