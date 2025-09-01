@@ -169,6 +169,29 @@ override.*
 **/*credential*
 **/*auth*
 
+# Test files and testing artifacts
+test_*.py
+*_test.py
+*.test.*
+*test*.json
+*test*.xml
+*test*.csv
+*test*.html
+test/
+tests/
+__tests__/
+.pytest_cache/
+coverage/
+.coverage
+htmlcov/
+.tox/
+.cache/
+.mypy_cache/
+pytest.ini
+tox.ini
+*TEST*
+*TESTING*
+
 # Exclude actual sensitive extensions regardless of location
 **/*.env
 **/*.secret
