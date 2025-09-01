@@ -63,11 +63,119 @@ htmlcov/
 *.sqlite
 *.sqlite3
 
-# Secrets
+# Environment Variables and API Keys
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.test
+.env.*
+!.env.template
+!.env.example
+
+# API Keys and Secrets
 *.pem
 *.key
+*.p12
+*.pfx
+*.crt
+*.cer
 secrets/
 .secrets/
+secret.txt
+api_keys.txt
+credentials.txt
+*secret*
+*credential*
+*password*
+*passwd*
+*pwd*
+*.keystore
+keyfile*.json
+
+# Cloud Provider Configuration Files
+.aws/
+.gcp/
+.azure/
+*gcp-key*.json
+*aws-key*.json
+*azure-key*.json
+service-account*.json
+credentials.json
+
+# Configuration Files with Sensitive Data
+config.local.*
+config.production.*
+config.development.*
+config.staging.*
+*.config.local
+*.config.production
+*.config.development
+*.config.staging
+
+# Backup and temporary files that might contain secrets
+*.bak
+*.backup
+*.orig
+*.tmp
+*~
+*.swp
+*.swo
+.#*
+#*#
+
+# Personal files
+TODO.personal
+notes.txt
+personal/
+private/
+
+# Package manager files that might contain auth tokens
+.npmrc
+.yarnrc
+.pip/pip.conf
+pip.conf
+pip.ini
+pypirc
+
+# SSH Keys and certificates
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.ppk
+known_hosts
+
+# JWT tokens and session files
+*.jwt
+token
+tokens/
+session*
+*.session
+
+# Local development override files
+docker-compose.override.yml
+docker-compose.local.yml
+local.yml
+override.*
+
+# Any file containing sensitive keywords in name
+**/*secret*
+**/*key*
+**/*token*
+**/*password*
+**/*passwd*
+**/*credential*
+**/*auth*
+
+# Exclude actual sensitive extensions regardless of location
+**/*.env
+**/*.secret
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
 
 # Uploads
 uploads/
